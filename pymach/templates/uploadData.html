@@ -19,6 +19,8 @@
                 </p>
                 <form class="dropzone" action="/storeData" method="POST" id="my-awesome-dropzone" enctype="multipart/form-data">
                     <div class="dz-message">
+                        <input type=file name=file>
+                        <input type=submit value=Upload>
                         <p class="mb-xs fw-normal">Drop your csv files here or click to upload.</p>
                         <p class="text-muted">Files must have the <strong>.csv</strong> extension</p>
                     </div>
@@ -80,11 +82,11 @@
                         <p class="fs-mini text-muted">
                             The {{name}} aims to show the distribution of numerical data.
                         </p>
-                        <div class="btn-toolbar">
+                        <!--div class="btn-toolbar">
                             <button type="button" class="m-t-1 btn btn-info" data-toggle="popover" title="" data-placement="right" data-content="And here's some amazing content. It's very engaging. right?" data-original-title="A Title">
                                 Show more info
                             </button>
-                        </div>
+                        </div-->
                     </div>
                     {{ dataset |safe }}
                 </section>

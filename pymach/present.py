@@ -40,6 +40,7 @@ def report_analyze(figures, response, data_path, data_name):
             data_path=data_path,
             header=None,
             response=response).pipeline()
+            # Here read and save the description of the data
 
     analyzer = analyze.Analyze(definer)
 
@@ -163,7 +164,6 @@ def storedata():
             return redirect(request.url)
 
         file = request.files['file']
-        #if file and allowed_file(file.file_name):
         file_name = ''
         data_name = ''
 
@@ -171,7 +171,6 @@ def storedata():
             flash('No selected file')
             return redirect(request.url)
         if file and allowed_file(file.filename):
-        # if file:
             file_name = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_DIR'], file_name)
             file.save(file_path)
@@ -210,12 +209,11 @@ def chooseData():
     #                          data_name, data_name+'.csv', data_name+'.html'],
     #                         stdout=subprocess.PIPE)
 
-    try:
+    try: # si existe el archivo .html
         dataset = None
         with open(data_path) as f:
             dataset = f.read()
-
-    except:
+    except: # si no existe el archivo .html
         data_path = os.path.join(app.config['UPLOAD_DIR'], file_name)
         with open(data_path) as myfile:
             dataset = list(islice(myfile, 40))
@@ -224,7 +222,7 @@ def chooseData():
     return render_template(
             'uploadData.html',
             files=dirs,
-            dataset=dataset,
+            dataset=dataset, # se pasa matrix o html
             data_name=data_name)
 
 
@@ -279,13 +277,14 @@ def analyze_base():
 
 @app.route('/analyze_app', methods=['GET', 'POST'])
 def analyze_app():
-    figures = ['histogram', 'box', 'corr', 'scatter']
+    figures = ['histogram', 'boxplot', 'correlation', 'scatter']
     response = "class"
     data_name = ''
     data_path = ''
     dirs = os.listdir(app.config['UPLOAD_DIR'])
     if request.method == 'POST':
-        data_name = request.form['submit']
+        data_name = request.form['submit'] # pide el nombre
+        # se busca el archivo en el directorio y se guarda la ruta
         data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
 
     return render_template(

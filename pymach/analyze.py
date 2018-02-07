@@ -15,7 +15,6 @@ import tools
 # import matplotlib.pyplot as plt
 import pandas as pd
 # import plotly.plotly as py
-import cufflinks as cf # Needed
 from plotly.offline.offline import _plot_html
 from collections import namedtuple
 
@@ -50,14 +49,25 @@ class Analyze():
     def pipeline(self):
 
         analyzers = []
-        analyzers.append(self.hist)
-        analyzers.append(self.density)
-        analyzers.append(self.corr)
+        analyzers.append(self.histogram)
+        analyzers.append(self.boxplot)
+        analyzers.append(self.correlation)
         analyzers.append(self.scatter)
 
         [m() for m in analyzers]
 
         return self
+
+    def plot_to_html(self, fig):
+        plotly_html_div, plotdivid, width, height = _plot_html(
+                figure_or_data=fig,
+                config="",
+                validate=True,
+                default_width='90%',
+                default_height="100%",
+                global_requirejs=False)
+
+        return plotly_html_div
 
     def description(self):
         """Shows a basic data description .
@@ -80,21 +90,6 @@ class Analyze():
 
         """
         return self.data.groupby(self.response).size()
-
-    #def init_plot(self):
-        #cf.set_config_file(offline=True, world_readable=True,
-                #theme='pearl')
-
-    def plot_to_html(self, fig):
-        plotly_html_div, plotdivid, width, height = _plot_html(
-                figure_or_data=fig,
-                config="",
-                validate=True,
-                default_width='90%',
-                default_height="100%",
-                global_requirejs=False)
-
-        return plotly_html_div
 
     def histogram(self):
         fig = self.data.iplot(
@@ -151,12 +146,16 @@ class Analyze():
     def plot(self, name):
         if name == "histogram":
             return self.histogram()
-        elif name == "box":
+        elif name == "boxplot":
             return self.boxplot()
-        elif name == "corr":
+        elif name == "correlation":
             return self.correlation()
         elif name == "scatter":
             return self.scatter()
+        elif name == "description":
+            return self.description()
+        elif name == "classBalance":
+            return self.classBalance()
 
     def save_plot(self, name):
         with open(name, "w") as plot:
