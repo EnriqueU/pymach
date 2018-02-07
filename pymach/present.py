@@ -23,6 +23,7 @@ from flask import Flask, render_template, \
 from werkzeug.utils import secure_filename
 from collections import OrderedDict
 
+import sys # print en consola
 
 
 app = Flask(__name__)
@@ -158,18 +159,37 @@ def defineData():
 def storedata():
     """  Upload a new file """
 
+    dirs = os.listdir(app.config['UPLOAD_DIR'])
+    print('print en consola',dirs,file=sys.stdout)
+    
+    #return redirect(url_for('defineData'))
     if request.method == 'POST':
+        
         if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-
+            
+            # flash('No file part')
+            #return redirect(request.url)
+            # igual a /defineData
+            return render_template(
+                'uploadData.html',
+                infoUpload='Elegir un archivo .csv',
+                files=dirs)
+        
         file = request.files['file']
         file_name = ''
         data_name = ''
 
         if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
+            
+            # flash('No selected file')
+            
+            #return redirect(request.url)
+            # igual a /defineData
+            return render_template(
+                'uploadData.html',
+                infoUpload='Archivo no seleccionado ',
+                files=dirs)
+
         if file and allowed_file(file.filename):
             file_name = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_DIR'], file_name)
@@ -178,14 +198,25 @@ def storedata():
             # data_name = file_name.replace(".csv", "")
             # print(data_name)
             # command = 'csvtotable -c "Iris dataset" iris.csv iris.html'
-            return jsonify({"success":True})
+            #return jsonify({"success":True})
+            
+            # igual a /defineData
+            return render_template(
+                'uploadData.html',
+                infoUpload='Correcto!! '+file_name,
+                files=dirs)
 
             # result = subprocess.run(['csvtotable', '-c',
             #                          data_name, file_name, data_name+'.html'],
             #                         stdout=subprocess.PIPE)
 
         # return redirect(url_for('showData', filename=file_name))
-        return redirect(url_for('defineData'))
+        #return redirect(url_for('defineData'))
+        # igual a /defineData
+        return render_template(
+            'uploadData.html',
+            infoUpload='Error al cargar',
+            files=dirs)
     else:
         return redirect(url_for('defineData'))
 
@@ -386,4 +417,6 @@ def market_app():
 
 
 if __name__ == '__main__':
-   app.run(host='0.0.0.0', debug=True, port=8002)
+    app.run(host='0.0.0.0', debug=True, port=8002)
+    #falta: para mensaje flush
+        #app.secret_key = 'some_secret'
