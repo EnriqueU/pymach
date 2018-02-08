@@ -159,70 +159,44 @@ def storedata():
 
     dirs = os.listdir(app.config['UPLOAD_DIR'])
 
-    
+
     #return redirect(url_for('defineData'))
     if request.method == 'POST':
-        
+
         if 'file' not in request.files:
-            
+
             # flash('No file part')
             #return redirect(request.url)
             # igual a /defineData
             return render_template(
                 'uploadData.html',
-                infoUpload='Elegir un archivo .csv',
+                infoUpload='Chosse a file .csv',
                 files=dirs)
-        
+
         file = request.files['file']
         file_name = ''
         data_name = ''
 
         if file.filename == '':
-            
-            # flash('No selected file')
-            
-            #return redirect(request.url)
-            # igual a /defineData
-
             return render_template(
                 'uploadData.html',
-                infoUpload='Archivo no seleccionado ',
+                infoUpload='file not selected',
                 files=dirs)
 
         if file and allowed_file(file.filename):
             file_name = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_DIR'], file_name)
             file.save(file_path)
-<<<<<<< HEAD
-            flash('Uploaded successfully')
-
-        return redirect(url_for('defineData'))
-=======
-            # file_name = str(file.filename)
-            # data_name = file_name.replace(".csv", "")
-            # print(data_name)
-            # command = 'csvtotable -c "Iris dataset" iris.csv iris.html'
-            #return jsonify({"success":True})
-            
-            # igual a /defineData
             dirs = os.listdir(app.config['UPLOAD_DIR'])
             return render_template(
                 'uploadData.html',
-                infoUpload='Correcto!! '+file_name,
+                infoUpload='Uploaded!! '+file_name,
                 files=dirs)
 
-            # result = subprocess.run(['csvtotable', '-c',
-            #                          data_name, file_name, data_name+'.html'],
-            #                         stdout=subprocess.PIPE)
-
-        # return redirect(url_for('showData', filename=file_name))
-        #return redirect(url_for('defineData'))
-        # igual a /defineData
         return render_template(
             'uploadData.html',
-            infoUpload='Error al cargar',
+            infoUpload='Error',
             files=dirs)
->>>>>>> e3ff3f90f6952ca07e833561b705e145bd23c548
     else:
         return redirect(url_for('defineData'))
 
