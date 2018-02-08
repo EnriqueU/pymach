@@ -2,6 +2,24 @@
 
 {%  block content_dashboard %}
 
+<!-- inicio informacion -->
+{% if not infoUpload %}
+
+{% else %}
+<div class="row">
+    <div class="col-lg-6">
+      <section class="widget">
+          <header>
+              <h3>
+                  <strong>{{infoUpload}}</strong>
+              </h3>
+          </header>
+      </section>
+    </div>
+</div>
+{% endif %}
+<!-- end informacion -->
+
 <!--Upload data-->
 <div class="row">
     <div class="col-lg-6">
