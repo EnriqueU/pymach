@@ -25,6 +25,13 @@
                         <p class="text-muted">Files must have the <strong>.csv</strong> extension</p>
                     </div>
                 </form>
+                {% with messages = get_flashed_messages() %}
+                  {% if messages %}
+                    {% for message in messages %}
+                      <p>{{ message }}</p>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
             </div>
 
         </section>
@@ -82,11 +89,11 @@
                         <p class="fs-mini text-muted">
                             The {{name}} aims to show the distribution of numerical data.
                         </p>
-                        <!--div class="btn-toolbar">
+                        <div class="btn-toolbar">
                             <button type="button" class="m-t-1 btn btn-info" data-toggle="popover" title="" data-placement="right" data-content="And here's some amazing content. It's very engaging. right?" data-original-title="A Title">
                                 Show more info
                             </button>
-                        </div-->
+                        </div>
                     </div>
                     {{ dataset |safe }}
                 </section>
@@ -94,6 +101,36 @@
         </div>
     {% endif %}
 
+    {% if not dataset2 %}
+      <!-- NO hace nada -->
+    {% else %}
+            <section class="widget">
+                <div class="widget-body">
+                    <div class="mt">
+                        <table id="datatable-table" class="table table-striped table-hover">
+                            <thead>
+                            <tr>
+                                {% for item in dataset2.readline().split(',') %}
+                                    <th>{{ item }}</th>
+                                {% endfor %}
+                            </tr>
+                            </thead>
+                            <tbody>
+                                {% for line in dataset2 %}
+                                <tr>
+                                    {% for item in line.split(',') %}
+                                        <td>{{ item }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <input type="hidden" id="filename" name="filename" value={{ filename }} />
+            </section>
+
+    {% endif %}
 
 {% endblock %}
 

@@ -26,6 +26,7 @@ from collections import OrderedDict
 
 
 app = Flask(__name__)
+app.secret_key = 'some_secret'
 
 APP_PATH = os.path.dirname(os.path.abspath(__file__))
 app.config['UPLOAD_DIR'] = os.path.join(APP_PATH, 'uploads')
@@ -141,9 +142,6 @@ def report_market(data_name):
 def allowed_file(file_name):
     return '.' in file_name and file_name.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-#@app.route('/')
-#def home():
-    #return render_template("uploadData.html")
 
 ########################### Start Upload Button ##################################
 @app.route('/')
@@ -174,17 +172,8 @@ def storedata():
             file_name = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_DIR'], file_name)
             file.save(file_path)
-            # file_name = str(file.filename)
-            # data_name = file_name.replace(".csv", "")
-            # print(data_name)
-            # command = 'csvtotable -c "Iris dataset" iris.csv iris.html'
-            return jsonify({"success":True})
+            flash('Uploaded successfully')
 
-            # result = subprocess.run(['csvtotable', '-c',
-            #                          data_name, file_name, data_name+'.html'],
-            #                         stdout=subprocess.PIPE)
-
-        # return redirect(url_for('showData', filename=file_name))
         return redirect(url_for('defineData'))
     else:
         return redirect(url_for('defineData'))
@@ -199,15 +188,12 @@ def chooseData():
     file_name = ''
     data_name = ''
     data_path = ''
+    dire = ''
     dirs = os.listdir(app.config['UPLOAD_DIR'])
     if request.method == 'POST':
         file_name = request.form['submit']
         data_name = file_name.replace(".csv", "")
         data_path = os.path.join(app.config['UPLOAD_DIR'], data_name+'.html')
-
-    # result = subprocess.run(['csvtotable', '-c', '--display-length','50',
-    #                          data_name, data_name+'.csv', data_name+'.html'],
-    #                         stdout=subprocess.PIPE)
 
     try: # si existe el archivo .html
         dataset = None
@@ -215,9 +201,12 @@ def chooseData():
             dataset = f.read()
     except: # si no existe el archivo .html
         data_path = os.path.join(app.config['UPLOAD_DIR'], file_name)
-        with open(data_path) as myfile:
-            dataset = list(islice(myfile, 40))
-            dataset = [line[:-1] for line in dataset]
+        dire = open(data_path)
+        return render_template(
+                'uploadData.html',
+                files=dirs,
+                dataset2 = dire,
+                data_name=data_name)
 
     return render_template(
             'uploadData.html',
@@ -225,48 +214,6 @@ def chooseData():
             dataset=dataset, # se pasa matrix o html
             data_name=data_name)
 
-
-########################### End Upload Button ##################################
-
-# Convert the uploaded csv file into a responsive table.
-# ########################## Start Convert table ##################################
-# @app.route('/chooseData/<filename>')
-# def showData(filename):
-#     """  choose a file and show its content """
-#     from itertools import islice
-#
-#     data_name = filename.replace(".csv", "")
-#     dirs = os.listdir(app.config['UPLOAD_DIR'])
-#     # result = subprocess.run(['csvtotable', '-c',
-#     #                          data_name, filename, data_name+'.html'],
-#     #                         stdout=subprocess.PIPE)
-#
-#     dataset = 'asdasd'
-#     print(filename + 'start')
-#     data_path = os.path.join(app.config['UPLOAD_DIR'], filename)
-#     comm = 'csvtotable -c' + " Iris " + filename + ' ' + data_name+'.html'
-#     os.system(comm)
-#     # with open(data_path) as f:
-#     #     dataset = f.read()
-#     #     print(dataset[0])
-#     print(filename + 'end')
-#     # data_path = os.path.join(app.config['UPLOAD_DIR'], data_name+'.html')
-#     #
-#     # dataset = None
-#     # with open(data_path) as f:
-#     #     dataset = f.read()
-#
-#     # with open(data_path) as myfile:
-#     #     dataset = list(islice(myfile, 40))
-#     #     dataset = [line[:-1] for line in dataset]
-#
-#     return render_template(
-#         'uploadData.html',
-#         files=dirs,
-#         dataset=dataset,
-#         data_name=data_name)
-
-# ########################## End Convert table ##################################
 
 # ########################## Start Analyze Button ##################################
 @app.route('/analyze_base', methods=['GET', 'POST'])
