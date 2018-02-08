@@ -160,7 +160,7 @@ def storedata():
     """  Upload a new file """
 
     dirs = os.listdir(app.config['UPLOAD_DIR'])
-    print('print en consola',dirs,file=sys.stdout)
+
     
     #return redirect(url_for('defineData'))
     if request.method == 'POST':
@@ -185,6 +185,7 @@ def storedata():
             
             #return redirect(request.url)
             # igual a /defineData
+
             return render_template(
                 'uploadData.html',
                 infoUpload='Archivo no seleccionado ',
@@ -201,6 +202,7 @@ def storedata():
             #return jsonify({"success":True})
             
             # igual a /defineData
+            dirs = os.listdir(app.config['UPLOAD_DIR'])
             return render_template(
                 'uploadData.html',
                 infoUpload='Correcto!! '+file_name,
