@@ -516,8 +516,6 @@ class Improve():
         # score_report = pd.DataFrame(score_report, columns=['Model', "Score", "Error"])
         score_report = pd.DataFrame(score_report, columns=['Model', "Score"])
         score_report = self.sort_report(score_report)
-
-
         return score_report, full_report
 
     def sort_report(self, report):
@@ -619,8 +617,10 @@ class Improve():
 
         for i, d in enumerate(results):
             trace = go.Box(
-                y=d['values'],
-                name=d['Model'],
+                #y=d['Score'],
+                y=d[0],
+                #name=d['Model'],
+                name=d[1],
                 marker=dict(
                     color=c[i],
                 ),
@@ -629,8 +629,10 @@ class Improve():
             data.append(trace)
 
         text_scatter = go.Scatter(
-                x=[d['Model'] for d in results],
-                y=[d['Score'] for d in results],
+                #x=[d['Model'] for d in results],
+                x=[d[0] for d in results],
+                #y=[d['Score'] for d in results],
+                y=[d[1] for d in results],
                 name='score',
                 mode='markers',
                 text=['Explanation' for _ in results]
@@ -642,7 +644,9 @@ class Improve():
             annotations=[
                 dict(
                     x=results[0]['Model'],
+                    #x=results[0][0],
                     y=results[0]['Score'],
+                    #y=results[0][1],
                     xref='x',
                     yref='y',
                     text='Best model',
@@ -653,7 +657,9 @@ class Improve():
                 ),
                 dict(
                     x=results[-1]['Model'],
+                    #x=results[-1][0],
                     y=results[-1]['Score'],
+                    #y=results[-1][1],
                     xref='x',
                     yref='y',
                     text='Worst model',

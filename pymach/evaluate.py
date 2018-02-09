@@ -51,9 +51,6 @@ from sklearn.ensemble import VotingClassifier
 
 class Evaluate():
     """ A class for resampling and evaluation """
-
-
-
     def __init__(self, definer, preparer, selector):
         self.definer = definer
         self.preparer = preparer
@@ -104,8 +101,7 @@ class Evaluate():
                                                                 random_state=rs)))
         # models.append(('AdaBoostClassifier', AdaBoostClassifier(DecisionTreeClassifier())))
         models.append(('RandomForestClassifier', RandomForestClassifier(random_state=rs)))
-        models.append(('GradientBoostingClassifier',
-                       GradientBoostingClassifier(random_state=rs)))
+        models.append(('GradientBoostingClassifier', GradientBoostingClassifier(random_state=rs)))
         # models.append(('GradientBoostingClassifier', GradientBoostingClassifier()))
 
         # Voting
@@ -146,6 +142,7 @@ class Evaluate():
             ))
 
         self.pipelines = pipelines
+        print(self.pipelines)
 
         return pipelines
 

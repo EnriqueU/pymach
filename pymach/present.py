@@ -78,18 +78,14 @@ def report_model(response, data_path, data_name):
     return dict_report
 
 
-def report_improve(response, data_name):
-    definer = define.Define(
-            data_path=data_name,
-            header=None,
-            response=response).pipeline()
-
+def report_improve(response, data_path):
+    definer = define.Define(data_path=data_path,header=None,response=response).pipeline()
     preparer = prepare.Prepare(definer).pipeline()
     selector = fselect.Select(definer).pipeline()
     evaluator = evaluate.Evaluate(definer, preparer, selector)
     improver = improve.Improve(evaluator).pipeline()
 
-    plot = improver.plot_models()
+    plot = improver.plot_models() # aqui esta el error
     table = improver.report
     dict_report = {'plot': plot, 'table': table}
 
@@ -294,7 +290,7 @@ def improve_app():
     return render_template(
             'improve.html',
             files=dirs,
-            report=report_improve(response, data_path, data_name),
+            report=report_improve(response, data_path),
             data_name=data_name)
 
 ########################### End Improve Button ##################################

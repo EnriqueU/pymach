@@ -12,8 +12,7 @@ and so forth.
 
 from __future__ import print_function
 
-__all__ = [
-    'pipeline']
+__all__ = ['pipeline']
 
 import numpy as np
 import pandas as pd
@@ -55,18 +54,11 @@ class Prepare():
             transformers.append(('minmax', minmax))
             transformers.append(('normalizer', normalizer))
         elif self.infer_algorithm in ["LinearR", "LogisticR"]:
-            #scaler = RobustScaler()
             scaler = StandardScaler()
             transformers.append(('scaler', scaler))
         else:
-            #scaler = StandardScaler()
             scaler = RobustScaler()
             transformers.append(('scaler', scaler))
-
-        #scaler = StandardScaler()
-        #transformers.append(('scaler', scaler))
-        #binarizer = Binarizer()
-        #print(transformers)
         return FeatureUnion(transformers)
 
     class Clean(BaseEstimator, TransformerMixin):
@@ -116,4 +108,3 @@ class Prepare():
 
         def fit(self, X, y=None, **fit_params):
             return self
-
