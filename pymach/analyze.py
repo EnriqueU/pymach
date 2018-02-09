@@ -9,14 +9,15 @@ for describing the dataset which is to be studied.
 
 """
 from __future__ import print_function
-# from pandas.tools.plotting import scatter_matrix
-# import numpy as np
 import tools
-# import matplotlib.pyplot as plt
+
 import pandas as pd
-# import plotly.plotly as py
+import numpy as np
+import plotly.plotly as py
 import cufflinks as cf # Needed
+
 from plotly.offline.offline import _plot_html
+from plotly.offline import iplot
 from collections import namedtuple
 
 __all__ = [
@@ -25,8 +26,7 @@ __all__ = [
 
 class Analyze():
     """ A class for data analysis """
-
-    FigureStruct = namedtuple("FigureStruct", "figure explanation")
+    #FigureStruct = namedtuple("FigureStruct", "figure explanation")
 
     def __init__(self, definer):
         """The init class.
@@ -47,6 +47,7 @@ class Analyze():
         self.data = definer.data
         self.plot_html = None
 
+    '''
     def pipeline(self):
 
         analyzers = []
@@ -58,6 +59,7 @@ class Analyze():
         [m() for m in analyzers]
 
         return self
+    '''
 
     def description(self):
         """Shows a basic data description .
@@ -80,10 +82,6 @@ class Analyze():
 
         """
         return self.data.groupby(self.response).size()
-
-    #def init_plot(self):
-        #cf.set_config_file(offline=True, world_readable=True,
-                #theme='pearl')
 
     def plot_to_html(self, fig):
         plotly_html_div, plotdivid, width, height = _plot_html(

@@ -11013,11 +11013,11 @@ input[type="radio"] .styled:checked + label::after {
 .glyphicon-menu-up:before {
   content: "\E260"; }
 
-/* 
-* 
-* THIS IS A SMALL BONUS FOR ALL CURIOUS PEOPLE :) 
-* Just add class .animated and .pulse, .rotateIn, .bounce, .swing or .tada to you HTML element with icons. You may find other great css animations here: http://coveloping.com/tools/css-animation-generator 
-* 
+/*
+*
+* THIS IS A SMALL BONUS FOR ALL CURIOUS PEOPLE :)
+* Just add class .animated and .pulse, .rotateIn, .bounce, .swing or .tada to you HTML element with icons. You may find other great css animations here: http://coveloping.com/tools/css-animation-generator
+*
 */
 .blockquote-sm {
   padding: 3px 15px;

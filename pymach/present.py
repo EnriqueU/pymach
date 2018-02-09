@@ -1,12 +1,6 @@
 # Standard Libraries
 import os
 import subprocess
-# import datetime
-
-# Third Libraries
-# import pandas as pd
-# import numpy as np
-
 # Local Libraries
 import define
 import analyze
@@ -45,16 +39,16 @@ def report_analyze(figures, response, data_path, data_name):
             # Here read and save the description of the data
 
     analyzer = analyze.Analyze(definer)
-
     dict_figures = OrderedDict()
+
     for fig in figures:
         data_name = data_name.replace(".csv", "")
         plot_path = os.path.join(app.config['MARKET_DIR'], data_name, 'analyze')
         tools.path_exists(plot_path)
         plot_path_plot = os.path.join(plot_path, fig+'.html')
+
         dict_figures[fig] = analyzer.plot(fig)
         analyzer.save_plot(plot_path_plot)
-
     return dict_figures
 
 
@@ -156,18 +150,10 @@ def defineData():
 @app.route('/storeData', methods=['GET', 'POST'])
 def storedata():
     """  Upload a new file """
-
     dirs = os.listdir(app.config['UPLOAD_DIR'])
 
-
-    #return redirect(url_for('defineData'))
     if request.method == 'POST':
-
         if 'file' not in request.files:
-
-            # flash('No file part')
-            #return redirect(request.url)
-            # igual a /defineData
             return render_template(
                 'uploadData.html',
                 infoUpload='Chosse a file .csv',
@@ -246,7 +232,7 @@ def analyze_base():
 
 @app.route('/analyze_app', methods=['GET', 'POST'])
 def analyze_app():
-    figures = ['histogram', 'boxplot', 'correlation', 'scatter']
+    figures = ['histogram', 'boxplot', 'correlation']
     response = "class"
     data_name = ''
     data_path = ''
