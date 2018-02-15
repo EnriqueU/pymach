@@ -97,8 +97,7 @@ class Evaluate():
         # Bagging and Boosting
         # models.append(('ExtraTreesClassifier', ExtraTreesClassifier(n_estimators=150)))
         models.append(('ExtraTreesClassifier', ExtraTreesClassifier(random_state=rs)))
-        models.append(('AdaBoostClassifier', AdaBoostClassifier(DecisionTreeClassifier(random_state=rs),
-                                                                random_state=rs)))
+        models.append(('AdaBoostClassifier', AdaBoostClassifier(DecisionTreeClassifier(random_state=rs),random_state=rs)))
         # models.append(('AdaBoostClassifier', AdaBoostClassifier(DecisionTreeClassifier())))
         models.append(('RandomForestClassifier', RandomForestClassifier(random_state=rs)))
         models.append(('GradientBoostingClassifier', GradientBoostingClassifier(random_state=rs)))
@@ -142,39 +141,26 @@ class Evaluate():
             ))
 
         self.pipelines = pipelines
-        print(self.pipelines)
-
+        #print(self.pipelines)
         return pipelines
 
+    # Evaluating models
     def evaluate_pipelines(self, ax=None):
-
         test_size = self.test_size
         num_folds = self.num_folds
         seed = self.seed
         scoring = 'accuracy'
 
-        #pipelines = self.build_pipelines(self.set_models())
-        #pipelines = self.pipelines
-
-
-        #self.report = {}
-        #report_element = {}
         self.report = [["Model", "Mean", "STD"]]
         results = []
         names = []
 
         for name, model in self.pipelines:
             print("Modeling...", name)
-
+            # Review here
             kfold = KFold(n_splits=num_folds, random_state=seed)
-            #cv_results = cross_val_score(model, self.definer.data.ix[:,:-1], self.definer.data.ix[:,-1], cv=kfold, \
-                    #scoring=scoring)
-            cv_results = cross_val_score(model, self.X_train, self.y_train, cv=kfold, \
-                    scoring=scoring)
-
-            # save the model to disk
-            #filename = name+'.ml'
-            #pickle.dump(model, open('./models/'+filename, 'wb'))
+            cv_results = cross_val_score(model, self.X_train, self.y_train, \
+                                        cv=kfold, scoring=scoring)
 
             #results.append(cv_results)
             mean = cv_results.mean()
@@ -182,38 +168,25 @@ class Evaluate():
 
             d = {'name': name, 'values': cv_results, 'mean': round(mean, 3), 'std': round(std, 3)}
             results.append(d)
-            #results['result'] = cv_results
-            #names.append(name)
-            #report_element[name] = {'mean':mean, 'std':std}
-            #self.report.update(report_element)
 
-            #report_print = "Model: {}, mean: {}, std: {}".format(name,
-                    #mean, std)
             self.report.append([name, round(mean,3), round(std,3)])
             print("Score ", mean)
             print("---------------------")
-            #print(report_print)
 
         self.raw_report = sorted(results, key=lambda k: k['mean'], reverse=True)
         #print(self.raw_report)
         headers = self.report.pop(0)
         df_report = pd.DataFrame(self.report, columns=headers)
-        #print(df_report)
+        print(df_report)
 
-        #print(self.report)
-        #self.sort_report(self.report)
         self.sort_report(df_report)
         #self.plotModels(results, names)
 
 
     def sort_report(self, report):
         """" Choose the best two algorithms"""
-
-        #sorted_t = sorted(report.items(), key=operator.itemgetter(1))
         report.sort_values(['Mean'], ascending=[False], inplace=True)
-        #self.bestAlgorithms = sorted_t[-2:]
         self.report = report.copy()
-
         #print(self.report)
 
     def set_best_pipelines(self):
@@ -225,7 +198,6 @@ class Evaluate():
                 best_pipelines.append(p)
 
         self.best_pipelines = best_pipelines
-
         #print(self.best_pipelines)
 
     def plot_to_html(self, fig):

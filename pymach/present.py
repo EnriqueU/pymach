@@ -52,14 +52,11 @@ def report_analyze(figures, response, data_path, data_name):
     return dict_figures
 
 
-def report_model(response, data_path, data_name):
-    definer = define.Define(
-            data_path=data_path,
-            header=None,
-            response=response).pipeline()
-
-    preparer = prepare.Prepare(definer).pipeline()
-    selector = fselect.Select(definer).pipeline()
+def report_model(response, data_path, data_name, problem_type):
+    definer = define.Define(data_path=data_path,header=None,
+            response=response,problem_type=problem_type).pipeline()
+    preparer = prepare.Prepare(definer).pipeline() # scaler
+    selector = fselect.Select(definer).pipeline() # pca
     evaluator = evaluate.Evaluate(definer, preparer, selector).pipeline()
 
     plot = evaluator.plot_models()
@@ -260,13 +257,14 @@ def model_app():
     data_path = ''
     dirs = os.listdir(app.config['UPLOAD_DIR'])
     if request.method == 'POST':
+        problem_type = request.form['typeModel']
         data_name = request.form['submit']
         data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
 
     return render_template(
             'models.html',
             files=dirs,
-            report=report_model(response, data_path, data_name),
+            report=report_model(response, data_path, data_name, problem_type),
             data_name=data_name)
 
 ########################### End Model Button ##################################

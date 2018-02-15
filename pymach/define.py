@@ -53,8 +53,8 @@ class Define():
         self.data_path = data_path
         self.header = header
         self.response = response
+        self.problem_type = problem_type
 
-        self.problem_type = 'classification'
         self.infer_algorithm = 'LogisticR'
         self.n_features = None
         self.samples = None
@@ -115,5 +115,3 @@ class Define():
 
         """
         pass
-
-
