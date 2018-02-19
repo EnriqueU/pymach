@@ -12,6 +12,10 @@ import operator
 import warnings
 import pickle
 
+from joblib import Parallel, delayed
+from math import sqrt
+import multiprocessing as mp
+
 import numpy as np
 import pandas as pd
 #import matplotlib.pyplot as plt
@@ -48,7 +52,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import VotingClassifier
 
-
 class Evaluate():
     """ A class for resampling and evaluation """
     def __init__(self, definer, preparer, selector):
@@ -69,6 +72,7 @@ class Evaluate():
         self.test_size = 0.2
         self.num_folds = 10
         self.seed = 7
+        self.scoring = 'accuracy'
 
     def pipeline(self):
 
@@ -133,7 +137,6 @@ class Evaluate():
         for m in models:
             pipelines.append((m[0],
                 Pipeline([
-                    #('preparer', FunctionTransformer(self.preparer)),
                     ('preparer', self.preparer),
                     ('selector', self.selector),
                     m,
@@ -144,25 +147,40 @@ class Evaluate():
         #print(self.pipelines)
         return pipelines
 
+    def evaluate_model(self, m):
+        kfold = KFold(n_splits=self.num_folds, random_state=self.seed)
+        result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring=self.scoring)
+        return result
+
     # Evaluating models
     def evaluate_pipelines(self, ax=None):
         test_size = self.test_size
         num_folds = self.num_folds
         seed = self.seed
-        scoring = 'accuracy'
+        scoring = self.scoring
 
         self.report = [["Model", "Mean", "STD"]]
         results = []
         names = []
 
+        print("*************************************")
+
+        kfold = KFold(n_splits=num_folds, random_state=seed)
+        m = []
+        for name, model in self.pipelines:
+            m.append(model)
+
+        pool = mp.Pool(processes=4)
+        r = pool.map(self.evaluate_model,m)
+        print(r[6])
+
+        print("*************************************")
         for name, model in self.pipelines:
             print("Modeling...", name)
-            # Review here
-            kfold = KFold(n_splits=num_folds, random_state=seed)
             cv_results = cross_val_score(model, self.X_train, self.y_train, \
                                         cv=kfold, scoring=scoring)
-
             #results.append(cv_results)
+            print(cv_results)
             mean = cv_results.mean()
             std = cv_results.std()
 
