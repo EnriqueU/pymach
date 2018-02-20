@@ -365,7 +365,7 @@ class Improve():
         models = ['LogisticRegression',
                   'LinearDiscriminantAnalysis',
                   #  'GaussianNB',
-                  'MLPClassifier',
+                  #'MLPClassifier',
                   #  'SVC',
                   'DecisionTreeClassifier',
                   #  'KNeighborsClassifier',

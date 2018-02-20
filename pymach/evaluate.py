@@ -93,7 +93,8 @@ class Evaluate():
         models.append(('LinearDiscriminantAnalysis', LinearDiscriminantAnalysis()))
         models.append(('SVC', SVC(random_state=rs)))
         models.append(('GaussianNB', GaussianNB()))
-        models.append(('MLPClassifier', MLPClassifier()))
+        
+        #models.append(('MLPClassifier', MLPClassifier()))
         models.append(('KNeighborsClassifier', KNeighborsClassifier()))
         models.append(('DecisionTreeClassifier', DecisionTreeClassifier(random_state=rs)))
         models.append(('LogisticRegression', LogisticRegression()))
@@ -163,18 +164,33 @@ class Evaluate():
         results = []
         names = []
 
-        print("*************************************")
-
-        kfold = KFold(n_splits=num_folds, random_state=seed)
         m = []
+        n = []
         for name, model in self.pipelines:
             m.append(model)
+            n.append(name)
 
-        pool = mp.Pool(processes=4)
+        num_cores=mp.cpu_count()
+        
+        print("*************************************::",num_cores)
+        pool = mp.Pool(processes=num_cores)
         r = pool.map(self.evaluate_model,m)
-        print(r[6])
+        
+        i=0
+        for cv_results in r:
+            print("Modeling...", n[i])
+            mean = cv_results.mean()
+            std = cv_results.std()
+            d = {'name': n[i], 'values': cv_results, 'mean': round(mean, 3), 'std': round(std, 3)}
+            results.append(d)
+            self.report.append([n[i], round(mean,3), round(std,3)])
+            print("Score ", mean)
+            print("---------------------")
+            i = i+1
+        
 
         print("*************************************")
+        '''
         for name, model in self.pipelines:
             print("Modeling...", name)
             cv_results = cross_val_score(model, self.X_train, self.y_train, \
@@ -190,7 +206,7 @@ class Evaluate():
             self.report.append([name, round(mean,3), round(std,3)])
             print("Score ", mean)
             print("---------------------")
-
+        '''
         self.raw_report = sorted(results, key=lambda k: k['mean'], reverse=True)
         #print(self.raw_report)
         headers = self.report.pop(0)

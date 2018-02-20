@@ -8,6 +8,5 @@ ExtraTreesClassifier,0.967,0.041
 AdaBoostClassifier,0.967,0.041
 RandomForestClassifier,0.967,0.041
 GradientBoostingClassifier,0.967,0.041
-MLPClassifier,0.958,0.056
-VotingClassifier,0.958,0.056
+VotingClassifier,0.967,0.041
 LogisticRegression,0.917,0.083

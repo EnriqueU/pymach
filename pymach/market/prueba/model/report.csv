@@ -1,0 +1,12 @@
+Model,Mean,STD
+RandomForestClassifier,0.815,0.142
+GaussianNB,0.81,0.111
+KNeighborsClassifier,0.795,0.18
+GradientBoostingClassifier,0.795,0.127
+LogisticRegression,0.79,0.156
+DecisionTreeClassifier,0.775,0.108
+VotingClassifier,0.775,0.14
+LinearDiscriminantAnalysis,0.77,0.14
+SVC,0.77,0.108
+ExtraTreesClassifier,0.77,0.166
+AdaBoostClassifier,0.755,0.119
