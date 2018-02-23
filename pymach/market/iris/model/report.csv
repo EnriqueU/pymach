@@ -3,6 +3,7 @@ LinearDiscriminantAnalysis,0.975,0.038
 GaussianNB,0.975,0.038
 VotingClassifier,0.975,0.038
 SVC,0.967,0.067
+MLPClassifier,0.967,0.041
 DecisionTreeClassifier,0.967,0.041
 ExtraTreesClassifier,0.967,0.041
 AdaBoostClassifier,0.967,0.041
