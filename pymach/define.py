@@ -55,7 +55,6 @@ class Define():
         self.response = response
         self.problem_type = problem_type
 
-        self.infer_algorithm = 'LogisticR'
         self.n_features = None
         self.samples = None
         self.size = None
@@ -108,10 +107,3 @@ class Define():
         dict_description["size"] = self.size
 
         return dict_description
-
-
-    def infer(self):
-        """ Infer algorithm considering dataset shape, n_features, etc.
-
-        """
-        pass

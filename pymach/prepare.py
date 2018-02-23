@@ -22,43 +22,18 @@ from sklearn.preprocessing import MinMaxScaler, Normalizer,\
 StandardScaler, RobustScaler, LabelEncoder, FunctionTransformer
 
 
-
-
 class Prepare():
     """ A class for data preparation """
 
-    # data = None
-
     def __init__(self, definer):
-        self.problem_type = definer.problem_type
-        self.infer_algorithm = definer.infer_algorithm
+        #self.problem_type = definer.problem_type
         self.categoricalData = False
-        # self.className = definer.className
-        # self.data_name = definer.data_name
 
     def pipeline(self):
         """ This function chooses the best way to scale a data"""
-
         transformers = []
-
-        #clean = self.Clean()
-        #transformers.append(('clean', FunctionTransformer(clean, validate=False)))
-        #transformers.append(('clean', clean))
-
-        #catToNumeric = self.CategoricalToNumeric()
-        #transformers.append(('catToNumeric', catToNumeric))
-
-        if self.infer_algorithm in ["NeuralN", "K-N"]:
-            minmax = MinMaxScaler(feature_range=(0,1))
-            normalizer = Normalizer()
-            transformers.append(('minmax', minmax))
-            transformers.append(('normalizer', normalizer))
-        elif self.infer_algorithm in ["LinearR", "LogisticR"]:
-            scaler = StandardScaler()
-            transformers.append(('scaler', scaler))
-        else:
-            scaler = RobustScaler()
-            transformers.append(('scaler', scaler))
+        scaler = RobustScaler()
+        transformers.append(('scaler', scaler))
         return FeatureUnion(transformers)
 
     class Clean(BaseEstimator, TransformerMixin):

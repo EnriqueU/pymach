@@ -28,36 +28,27 @@ from sklearn.base import BaseEstimator, TransformerMixin
 class Select():
     """ A class for feature selection """
 
-    # data = None
-
     def __init__(self, definer):
-        self.problem_type = definer.problem_type
-        self.infer_algorithm = definer.infer_algorithm
-        # self.response = definer.response
-        # self.data_path = definer.data_path
+        #self.problem_type = definer.problem_type
         self.n_features = definer.n_features
 
     def pipeline(self):
         """ This function chooses the best way to find features"""
-
         transformers = []
-
-        custom = self.CustomFeature()
-        #transformers.append(('custom', custom))
-        n_features = int(self.n_features/2)
-
-        #kbest = SelectKBest(score_func=chi2, k=n_features)
-        #transformers.append(('kbest', kbest))
-
-        pca = PCA(n_components=n_features, svd_solver='randomized', whiten=True)
-        transformers.append(('pca', pca))
-
-        extraTC = SelectFromModel(ExtraTreesClassifier(criterion='entropy'))
-        transformers.append(('extraTC', extraTC))
-
-        #scaler = StandardScaler()
-        #transformers.append(('scaler', scaler))
-        #binarizer = Binarizer()
+        if( self.n_features >3 ):
+            n_features = int(self.n_features/2)
+            ########################################################################
+            #kbest = SelectKBest(score_func=chi2, k=n_features)
+            #transformers.append(('kbest', kbest))
+            ########################################################################
+            pca = PCA(n_components=n_features, svd_solver='randomized', whiten=True)
+            transformers.append(('pca', pca))
+            ########################################################################
+            extraTC = SelectFromModel(ExtraTreesClassifier(criterion='entropy'))
+            transformers.append(('extraTC', extraTC))
+        else:
+            pca = PCA(n_components=self.n_features, svd_solver='randomized', whiten=True)
+            transformers.append(('pca', pca))
         return FeatureUnion(transformers)
 
     class CustomFeature(TransformerMixin):

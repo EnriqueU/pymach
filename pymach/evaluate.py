@@ -75,7 +75,6 @@ class Evaluate():
         self.scoring = 'accuracy'
 
     def pipeline(self):
-
         #evaluators = []
         self.build_pipelines()
         self.split_data(self.test_size, self.seed)
@@ -86,35 +85,37 @@ class Evaluate():
         return self
 
     def set_models(self):
-
         rs = 1
         models = []
-        # LDA : Warning(Variables are collinear)
-        models.append(('LinearDiscriminantAnalysis', LinearDiscriminantAnalysis()))
-        models.append(('SVC', SVC(random_state=rs)))
-        models.append(('GaussianNB', GaussianNB()))
-        
-        #models.append(('MLPClassifier', MLPClassifier()))
-        models.append(('KNeighborsClassifier', KNeighborsClassifier()))
-        models.append(('DecisionTreeClassifier', DecisionTreeClassifier(random_state=rs)))
-        models.append(('LogisticRegression', LogisticRegression()))
+        if (self.definer.problem_type == "Classification"):
+            # LDA : Warning(Variables are collinear)
+            models.append(('LinearDiscriminantAnalysis', LinearDiscriminantAnalysis()))
+            models.append(('SVC', SVC(random_state=rs)))
+            models.append(('GaussianNB', GaussianNB()))
 
-        # Bagging and Boosting
-        # models.append(('ExtraTreesClassifier', ExtraTreesClassifier(n_estimators=150)))
-        models.append(('ExtraTreesClassifier', ExtraTreesClassifier(random_state=rs)))
-        models.append(('AdaBoostClassifier', AdaBoostClassifier(DecisionTreeClassifier(random_state=rs),random_state=rs)))
-        # models.append(('AdaBoostClassifier', AdaBoostClassifier(DecisionTreeClassifier())))
-        models.append(('RandomForestClassifier', RandomForestClassifier(random_state=rs)))
-        models.append(('GradientBoostingClassifier', GradientBoostingClassifier(random_state=rs)))
-        # models.append(('GradientBoostingClassifier', GradientBoostingClassifier()))
+            #models.append(('MLPClassifier', MLPClassifier()))
+            models.append(('KNeighborsClassifier', KNeighborsClassifier()))
+            models.append(('DecisionTreeClassifier', DecisionTreeClassifier(random_state=rs)))
+            models.append(('LogisticRegression', LogisticRegression()))
 
-        # Voting
-        estimators = []
-        estimators.append(("Voting_GradientBoostingClassifier", GradientBoostingClassifier(random_state=rs)))
-        estimators.append(("Voting_ExtraTreesClassifier", ExtraTreesClassifier(random_state=rs)))
-        voting = VotingClassifier(estimators)
-        models.append(('VotingClassifier', voting))
-
+            # Bagging and Boosting
+            models.append(('ExtraTreesClassifier', ExtraTreesClassifier(random_state=rs)))
+            models.append(('AdaBoostClassifier', AdaBoostClassifier(DecisionTreeClassifier(random_state=rs),random_state=rs)))
+            models.append(('RandomForestClassifier', RandomForestClassifier(random_state=rs)))
+            models.append(('GradientBoostingClassifier', GradientBoostingClassifier(random_state=rs)))
+            # Voting
+            estimators = []
+            estimators.append(("Voting_GradientBoostingClassifier", GradientBoostingClassifier(random_state=rs)))
+            estimators.append(("Voting_ExtraTreesClassifier", ExtraTreesClassifier(random_state=rs)))
+            voting = VotingClassifier(estimators)
+            models.append(('VotingClassifier', voting))
+        elif (self.definer.problem_type == "Regression"):
+            #models.append(('SVR',SVR()))
+            #models.append()
+            #models.append()
+            #models.append()
+            #models.append()
+            pass
         return models
 
     def split_data(self, test_size=0.20, seed=7):
@@ -171,11 +172,11 @@ class Evaluate():
             n.append(name)
 
         num_cores=mp.cpu_count()
-        
+
         print("*************************************::",num_cores)
         pool = mp.Pool(processes=num_cores)
         r = pool.map(self.evaluate_model,m)
-        
+
         i=0
         for cv_results in r:
             print("Modeling...", n[i])
@@ -187,7 +188,7 @@ class Evaluate():
             print("Score ", mean)
             print("---------------------")
             i = i+1
-        
+
 
         print("*************************************")
         '''
