@@ -89,32 +89,32 @@ class Evaluate():
         models = []
         if (self.definer.problem_type == "Classification"):
             # LDA : Warning(Variables are collinear)
-            models.append(('LinearDiscriminantAnalysis', LinearDiscriminantAnalysis()))
-            models.append(('SVC', SVC(random_state=rs)))
-            models.append(('GaussianNB', GaussianNB()))
-
-            #models.append(('MLPClassifier', MLPClassifier()))
-            models.append(('KNeighborsClassifier', KNeighborsClassifier()))
-            models.append(('DecisionTreeClassifier', DecisionTreeClassifier(random_state=rs)))
-            models.append(('LogisticRegression', LogisticRegression()))
+            models.append( ('LinearDiscriminantAnalysis', LinearDiscriminantAnalysis()) )
+            models.append( ('SVC', SVC(random_state=rs)) )
+            models.append( ('GaussianNB', GaussianNB()) )
+            models.append( ('MLPClassifier', MLPClassifier(max_iter=1000,random_state=rs)) )
+            models.append( ('KNeighborsClassifier', KNeighborsClassifier()) )
+            models.append( ('DecisionTreeClassifier', DecisionTreeClassifier(random_state=rs)) )
+            models.append( ('LogisticRegression', LogisticRegression()) )
 
             # Bagging and Boosting
-            models.append(('ExtraTreesClassifier', ExtraTreesClassifier(random_state=rs)))
-            models.append(('AdaBoostClassifier', AdaBoostClassifier(DecisionTreeClassifier(random_state=rs),random_state=rs)))
-            models.append(('RandomForestClassifier', RandomForestClassifier(random_state=rs)))
-            models.append(('GradientBoostingClassifier', GradientBoostingClassifier(random_state=rs)))
+            models.append( ('ExtraTreesClassifier', ExtraTreesClassifier(random_state=rs)) )
+            models.append( ('AdaBoostClassifier', AdaBoostClassifier(DecisionTreeClassifier(random_state=rs),random_state=rs)) )
+            models.append( ('RandomForestClassifier', RandomForestClassifier(random_state=rs)) )
+            models.append( ('GradientBoostingClassifier', GradientBoostingClassifier(random_state=rs)) )
             # Voting
             estimators = []
-            estimators.append(("Voting_GradientBoostingClassifier", GradientBoostingClassifier(random_state=rs)))
-            estimators.append(("Voting_ExtraTreesClassifier", ExtraTreesClassifier(random_state=rs)))
+            estimators.append( ("Voting_GradientBoostingClassifier", GradientBoostingClassifier(random_state=rs)) )
+            estimators.append( ("Voting_ExtraTreesClassifier", ExtraTreesClassifier(random_state=rs)) )
             voting = VotingClassifier(estimators)
-            models.append(('VotingClassifier', voting))
+            models.append( ('VotingClassifier', voting) )
         elif (self.definer.problem_type == "Regression"):
-            #models.append(('SVR',SVR()))
-            #models.append()
-            #models.append()
-            #models.append()
-            #models.append()
+            models.append( ('SVR', SVR()) )
+            models.append( ('MLPRegressor', MLPRegressor(max_inter=1000)) )
+            models.append( ('KNeighborsRegressor', KNeighborsRegressor()) )
+            models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
+            models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
+            models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
             pass
         return models
 
@@ -156,27 +156,19 @@ class Evaluate():
 
     # Evaluating models
     def evaluate_pipelines(self, ax=None):
-        test_size = self.test_size
-        num_folds = self.num_folds
-        seed = self.seed
-        scoring = self.scoring
-
         self.report = [["Model", "Mean", "STD"]]
         results = []
         names = []
-
         m = []
         n = []
         for name, model in self.pipelines:
             m.append(model)
             n.append(name)
-
         num_cores=mp.cpu_count()
 
         print("*************************************::",num_cores)
         pool = mp.Pool(processes=num_cores)
         r = pool.map(self.evaluate_model,m)
-
         i=0
         for cv_results in r:
             print("Modeling...", n[i])
@@ -188,26 +180,8 @@ class Evaluate():
             print("Score ", mean)
             print("---------------------")
             i = i+1
-
-
         print("*************************************")
-        '''
-        for name, model in self.pipelines:
-            print("Modeling...", name)
-            cv_results = cross_val_score(model, self.X_train, self.y_train, \
-                                        cv=kfold, scoring=scoring)
-            #results.append(cv_results)
-            print(cv_results)
-            mean = cv_results.mean()
-            std = cv_results.std()
 
-            d = {'name': name, 'values': cv_results, 'mean': round(mean, 3), 'std': round(std, 3)}
-            results.append(d)
-
-            self.report.append([name, round(mean,3), round(std,3)])
-            print("Score ", mean)
-            print("---------------------")
-        '''
         self.raw_report = sorted(results, key=lambda k: k['mean'], reverse=True)
         #print(self.raw_report)
         headers = self.report.pop(0)
@@ -216,7 +190,6 @@ class Evaluate():
 
         self.sort_report(df_report)
         #self.plotModels(results, names)
-
 
     def sort_report(self, report):
         """" Choose the best two algorithms"""
