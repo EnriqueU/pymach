@@ -36,7 +36,7 @@ from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import FunctionTransformer
 
-#Algorithms
+#Algorithms Classifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
@@ -44,13 +44,24 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
-
 #Ensembles algorithms
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import VotingClassifier
+
+# Algorithms Regression
+from sklearn.svm import SVR
+from sklearn.neural_network import MLPRegressor
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.tree import DecisionTreeRegressor
+#Ensembles algorithms
+from sklearn.ensemble import ExtraTreesRegressor
+from sklearn.ensemble import AdaBoostRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import VotingRegressor
 
 class Evaluate():
     """ A class for resampling and evaluation """
@@ -115,7 +126,6 @@ class Evaluate():
             models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
             models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
             models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
-            pass
         return models
 
     def split_data(self, test_size=0.20, seed=7):
