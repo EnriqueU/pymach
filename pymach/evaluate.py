@@ -15,6 +15,7 @@ import pickle
 from joblib import Parallel, delayed
 from math import sqrt
 import multiprocessing as mp
+import array
 
 import numpy as np
 import pandas as pd
@@ -61,7 +62,7 @@ from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.ensemble import AdaBoostRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.ensemble import VotingRegressor
+#from sklearn.ensemble import VotingRegressor
 
 class Evaluate():
     """ A class for resampling and evaluation """
@@ -120,12 +121,12 @@ class Evaluate():
             voting = VotingClassifier(estimators)
             models.append( ('VotingClassifier', voting) )
         elif (self.definer.problem_type == "Regression"):
-            models.append( ('SVR', SVR()) )
-            models.append( ('MLPRegressor', MLPRegressor(max_inter=1000)) )
-            models.append( ('KNeighborsRegressor', KNeighborsRegressor()) )
-            models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
-            models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
-            models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
+            #models.append( ('SVR', SVR()) )
+            models.append( ('MLPRegressor', MLPRegressor(max_iter=1000)) )
+            #models.append( ('KNeighborsRegressor', KNeighborsRegressor()) )
+            #models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
+            #models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
+            #models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
         return models
 
     def split_data(self, test_size=0.20, seed=7):
@@ -139,7 +140,7 @@ class Evaluate():
         self.y_train = y_train
         self.y_test = y_test
 
-        # return X_train, X_test, y_train, y_test
+        # return X_train, X_test, y_train, y_testfrom sklearn.model_selection import KFold
 
 
     def build_pipelines(self):
@@ -161,7 +162,14 @@ class Evaluate():
 
     def evaluate_model(self, m):
         kfold = KFold(n_splits=self.num_folds, random_state=self.seed)
-        result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring=self.scoring)
+        if (self.definer.problem_type == "Classification"):
+            result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring=self.scoring)
+        elif (self.definer.problem_type == "Regression"):
+            #result = cross_val_score(m, self.X_train, self.y_train, cv=kfold)
+            result = array([ -2.99027609e-01,   7.27295298e-02,  -2.05619646e-01,
+        -5.12105542e+01,  -6.84610221e+01,  -7.25076591e+01,
+        -9.63806285e+01,  -4.49151719e+00,  -2.79052225e+01,
+        -4.41901757e+01])
         return result
 
     # Evaluating models
