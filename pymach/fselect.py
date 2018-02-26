@@ -15,6 +15,8 @@ import pandas as pd
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn.feature_selection import f_regression
+from sklearn.feature_selection import f_classif
+
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.decomposition import PCA
 from sklearn.feature_selection import SelectFromModel
@@ -29,7 +31,7 @@ class Select():
     """ A class for feature selection """
 
     def __init__(self, definer):
-        #self.problem_type = definer.problem_type
+        self.problem_type = definer.problem_type
         self.n_features = definer.n_features
 
     def pipeline(self):
@@ -37,15 +39,19 @@ class Select():
         transformers = []
         if( self.n_features >3 ):
             n_features = int(self.n_features/2)
-            ########################################################################
-            #kbest = SelectKBest(score_func=chi2, k=n_features)
-            #transformers.append(('kbest', kbest))
-            ########################################################################
             pca = PCA(n_components=n_features, svd_solver='randomized', whiten=True)
             transformers.append(('pca', pca))
             ########################################################################
-            extraTC = SelectFromModel(ExtraTreesClassifier(criterion='entropy'))
-            transformers.append(('extraTC', extraTC))
+            #extraTC = SelectFromModel(ExtraTreesClassifier(criterion='entropy'))
+            #transformers.append(('extraTC', extraTC))
+            ########################################################################
+            if (self.problem_type == "Classification"):
+                kbest = SelectKBest(score_func=f_classif, k=n_features)
+                transformers.append(('kbest', kbest))
+            elif(self.problem_type == "Regression"):
+                kbest = SelectKBest(score_func=f_regression, k=n_features)
+                transformers.append(('kbest', kbest))
+
         else:
             pca = PCA(n_components=self.n_features, svd_solver='randomized', whiten=True)
             transformers.append(('pca', pca))

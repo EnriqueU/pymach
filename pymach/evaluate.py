@@ -15,7 +15,6 @@ import pickle
 from joblib import Parallel, delayed
 from math import sqrt
 import multiprocessing as mp
-import array
 
 import numpy as np
 import pandas as pd
@@ -24,13 +23,16 @@ import pandas as pd
 import plotly.graph_objs as go
 import cufflinks as cf # Needed
 #sklearn warning
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+#warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+from sklearn.metrics import mean_squared_error
 
 from collections import OrderedDict
 from plotly.offline.offline import _plot_html
 
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
+
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import KFold
@@ -104,7 +106,7 @@ class Evaluate():
             models.append( ('LinearDiscriminantAnalysis', LinearDiscriminantAnalysis()) )
             models.append( ('SVC', SVC(random_state=rs)) )
             models.append( ('GaussianNB', GaussianNB()) )
-            models.append( ('MLPClassifier', MLPClassifier(max_iter=1000,random_state=rs)) )
+            #models.append( ('MLPClassifier', MLPClassifier(max_iter=1000,random_state=rs)) )
             models.append( ('KNeighborsClassifier', KNeighborsClassifier()) )
             models.append( ('DecisionTreeClassifier', DecisionTreeClassifier(random_state=rs)) )
             models.append( ('LogisticRegression', LogisticRegression()) )
@@ -121,17 +123,16 @@ class Evaluate():
             voting = VotingClassifier(estimators)
             models.append( ('VotingClassifier', voting) )
         elif (self.definer.problem_type == "Regression"):
-            #models.append( ('SVR', SVR()) )
-            models.append( ('MLPRegressor', MLPRegressor(max_iter=1000)) )
-            #models.append( ('KNeighborsRegressor', KNeighborsRegressor()) )
-            #models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
-            #models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
-            #models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
+            models.append( ('SVR', SVR()) )
+            #models.append( ('MLPRegressor', MLPRegressor(max_iter=1000)) )
+            models.append( ('KNeighborsRegressor', KNeighborsRegressor(n_neighbors=5, n_jobs=-1)) )
+            models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
+            models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
+            models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
         return models
 
     def split_data(self, test_size=0.20, seed=7):
         """ Need to fill """
-
         X_train, X_test, y_train, y_test =  train_test_split(
                 self.definer.X, self.definer.y, test_size=test_size, random_state=seed)
 
@@ -165,11 +166,7 @@ class Evaluate():
         if (self.definer.problem_type == "Classification"):
             result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring=self.scoring)
         elif (self.definer.problem_type == "Regression"):
-            #result = cross_val_score(m, self.X_train, self.y_train, cv=kfold)
-            result = array([ -2.99027609e-01,   7.27295298e-02,  -2.05619646e-01,
-        -5.12105542e+01,  -6.84610221e+01,  -7.25076591e+01,
-        -9.63806285e+01,  -4.49151719e+00,  -2.79052225e+01,
-        -4.41901757e+01])
+            result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring='neg_mean_squared_error')
         return result
 
     # Evaluating models
@@ -182,23 +179,22 @@ class Evaluate():
         for name, model in self.pipelines:
             m.append(model)
             n.append(name)
-        num_cores=mp.cpu_count()
 
-        print("*************************************::",num_cores)
+        num_cores=mp.cpu_count()
+        print("****************** num_cores: ",num_cores," *********************")
         pool = mp.Pool(processes=num_cores)
         r = pool.map(self.evaluate_model,m)
         i=0
         for cv_results in r:
-            print("Modeling...", n[i])
+            print("Modeling ...", n[i])
             mean = cv_results.mean()
             std = cv_results.std()
             d = {'name': n[i], 'values': cv_results, 'mean': round(mean, 3), 'std': round(std, 3)}
             results.append(d)
             self.report.append([n[i], round(mean,3), round(std,3)])
-            print("Score ", mean)
-            print("---------------------")
+            print("Score ...", mean)
             i = i+1
-        print("*************************************")
+        print("*****************************************************************")
 
         self.raw_report = sorted(results, key=lambda k: k['mean'], reverse=True)
         #print(self.raw_report)
