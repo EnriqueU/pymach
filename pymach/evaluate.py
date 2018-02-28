@@ -166,7 +166,7 @@ class Evaluate():
         if (self.definer.problem_type == "Classification"):
             result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring=self.scoring)
         elif (self.definer.problem_type == "Regression"):
-            result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring='neg_mean_squared_error')
+            result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring='r2')
         return result
 
     # Evaluating models
