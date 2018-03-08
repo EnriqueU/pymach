@@ -1,2 +1,10 @@
 Model,Mean,STD
+<<<<<<< HEAD
 SVR,0.928,0.033
+=======
+SVR,0.93,0.034
+KNeighborsRegressor,0.922,0.04
+AdaBoostRegressor,0.906,0.046
+ExtraTreesRegressor,0.9,0.041
+DecisionTreeRegressor,0.846,0.082
+>>>>>>> ab2ce27017dc43fd0ed7a7732f246f6bc709493b
