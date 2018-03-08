@@ -18,6 +18,7 @@ import pandas as pd
 
 from collections import OrderedDict
 from tools import sizeof_file
+from sklearn import preprocessing
 
 class Define():
     """Define module.
@@ -42,8 +43,6 @@ class Define():
     Number of rows in the dataset.
 
     """
-
-
     def __init__(self,
             data_path,
             header=None,
@@ -63,23 +62,14 @@ class Define():
         self.y = None
 
     def pipeline(self):
-
         definers = []
         definers.append(self.read)
         definers.append(self.description)
-
+        definers.append(self.categoricalToNumeric)
         [m() for m in definers]
-
         return self
 
     def read(self):
-        """Read the dataset.
-
-        Returns
-        -------
-        out : ndarray
-
-        """
         try:
             if self.data_path is not None and self.response is not None:
                 if self.header is not None:
@@ -107,3 +97,15 @@ class Define():
         dict_description["size"] = self.size
 
         return dict_description
+
+    def categoricalToNumeric(self):
+        print(self.X.select_dtypes(include=[object]).shape[1])
+        if self.X.select_dtypes(include=[object]).shape[1]:
+            numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+            X_1 = self.X.select_dtypes(include=numerics)
+            X_2 = self.X.select_dtypes(include=[object])
+            le = preprocessing.LabelEncoder()
+            X_2 = X_2.apply(le.fit_transform)
+            self.X = pd.concat([X_1,X_2],axis=1)
+            print(self.X)
+            print(self.X.dtypes)

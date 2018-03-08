@@ -23,11 +23,8 @@ from collections import namedtuple
 __all__ = [
     'read', 'description', 'classBalance', 'hist', 'density']
 
-
 class Analyze():
     """ A class for data analysis """
-    #FigureStruct = namedtuple("FigureStruct", "figure explanation")
-
     def __init__(self, definer):
         """The init class.
 
@@ -38,49 +35,22 @@ class Analyze():
             or regression.
         className : string
             String that indicates which column in the dataset is the class.
-
         """
         self.problem_type = definer.problem_type
-        # self.infer_algorithm = definer.infer_algorithm
         self.response = definer.response
-        # self.data_path = definer.data_path
         self.data = definer.data
         self.plot_html = None
 
-    '''
-    def pipeline(self):
-
-        analyzers = []
-        analyzers.append(self.hist)
-        analyzers.append(self.density)
-        analyzers.append(self.corr)
-        analyzers.append(self.scatter)
-
-        [m() for m in analyzers]
-
-        return self
-    '''
-
     def description(self):
-        """Shows a basic data description .
+        """Shows a basic data description ."""
 
-        Returns
-        -------
-        out : ndarray
-
-        """
-        #return self.data.describe()
-        return pd.DataFrame(self.data.describe())
+        description = self.data.describe().round(3)
+        description = description.reset_index()
+        return description
 
     def classBalance(self):
-        """Shows how balanced the class values are.
+        """Shows how balanced the class values are."""
 
-        Returns
-        -------
-        out : pandas.core.series.Series
-        Serie showing the count of classes.
-
-        """
         return self.data.groupby(self.response).size()
 
     def plot_to_html(self, fig):
@@ -147,11 +117,11 @@ class Analyze():
         return self.plot_html
 
     def plot(self, name):
-        if name == "histogram":
+        if name == "Histogram":
             return self.histogram()
-        elif name == "boxplot":
+        elif name == "Boxplot":
             return self.boxplot()
-        elif name == "correlation":
+        elif name == "Correlation":
             return self.correlation()
         elif name == "scatter":
             return self.scatter()

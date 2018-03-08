@@ -16,6 +16,7 @@ __all__ = ['pipeline']
 
 import numpy as np
 import pandas as pd
+from sklearn import preprocessing
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import MinMaxScaler, Normalizer,\
@@ -26,8 +27,7 @@ class Prepare():
     """ A class for data preparation """
 
     def __init__(self, definer):
-        #self.problem_type = definer.problem_type
-        self.categoricalData = False
+        self.problem_type = definer.problem_type
 
     def pipeline(self):
         """ This function chooses the best way to scale a data"""
@@ -36,8 +36,9 @@ class Prepare():
         transformers.append(('scaler', scaler))
         return FeatureUnion(transformers)
 
+    """
     class Clean(BaseEstimator, TransformerMixin):
-        """ A class for removing NAN values """
+        # A class for removing NAN values
 
         def transform(self, X, y=None, **transform_params):
             #X = pd.DataFrame(X)
@@ -53,7 +54,7 @@ class Prepare():
             return self
 
     class CategoricalToNumeric(BaseEstimator, TransformerMixin):
-        """ A class for parsing categorical columns """
+        # A class for parsing categorical columns
 
         def categoricalColumns(self, df):
             cols = df.columns
@@ -83,3 +84,4 @@ class Prepare():
 
         def fit(self, X, y=None, **fit_params):
             return self
+    """

@@ -26,6 +26,7 @@ import cufflinks as cf # Needed
 #warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
 
 from collections import OrderedDict
 from plotly.offline.offline import _plot_html
@@ -89,13 +90,11 @@ class Evaluate():
         self.scoring = 'accuracy'
 
     def pipeline(self):
-        #evaluators = []
         self.build_pipelines()
         self.split_data(self.test_size, self.seed)
         self.evaluate_pipelines()
         self.set_best_pipelines()
 
-        #[m() for m in evaluators]
         return self
 
     def set_models(self):
@@ -125,29 +124,15 @@ class Evaluate():
         elif (self.definer.problem_type == "Regression"):
             models.append( ('SVR', SVR()) )
             #models.append( ('MLPRegressor', MLPRegressor(max_iter=1000)) )
-            models.append( ('KNeighborsRegressor', KNeighborsRegressor(n_neighbors=5, n_jobs=-1)) )
-            models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
-            models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
-            models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
+            #models.append( ('KNeighborsRegressor', KNeighborsRegressor(n_neighbors=5, n_jobs=-1)) )
+            #models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
+            #models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
+            #models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
         return models
-
-    def split_data(self, test_size=0.20, seed=7):
-        """ Need to fill """
-        X_train, X_test, y_train, y_test =  train_test_split(
-                self.definer.X, self.definer.y, test_size=test_size, random_state=seed)
-
-        self.X_train = X_train
-        self.X_test = X_test
-        self.y_train = y_train
-        self.y_test = y_test
-
-        # return X_train, X_test, y_train, y_testfrom sklearn.model_selection import KFold
-
 
     def build_pipelines(self):
         pipelines = []
         models = self.set_models()
-
         for m in models:
             pipelines.append((m[0],
                 Pipeline([
@@ -156,17 +141,25 @@ class Evaluate():
                     m,
                 ])
             ))
-
         self.pipelines = pipelines
-        #print(self.pipelines)
         return pipelines
+
+    def split_data(self, test_size=0.20, seed=7):
+        """ Need to fill """
+        X_train, X_test, y_train, y_test =  train_test_split(self.definer.X, self.definer.y, test_size=test_size, random_state=seed)
+        self.X_train = X_train
+        self.X_test = X_test
+        self.y_train = y_train
+        self.y_test = y_test
 
     def evaluate_model(self, m):
         kfold = KFold(n_splits=self.num_folds, random_state=self.seed)
+        print(self.X_train)
+        print(self.y_train)
         if (self.definer.problem_type == "Classification"):
             result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring=self.scoring)
         elif (self.definer.problem_type == "Regression"):
-            result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring='neg_mean_squared_error')
+            result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring='r2')
         return result
 
     # Evaluating models
@@ -184,6 +177,7 @@ class Evaluate():
         print("****************** num_cores: ",num_cores," *********************")
         pool = mp.Pool(processes=num_cores)
         r = pool.map(self.evaluate_model,m)
+        pool.close()
         i=0
         for cv_results in r:
             print("Modeling ...", n[i])
@@ -201,7 +195,6 @@ class Evaluate():
         headers = self.report.pop(0)
         df_report = pd.DataFrame(self.report, columns=headers)
         print(df_report)
-
         self.sort_report(df_report)
         #self.plotModels(results, names)
 
@@ -235,9 +228,6 @@ class Evaluate():
 
     def plot_models(self):
         """" Plot the algorithms by using box plots"""
-        #df = pd.DataFrame.from_dict(self.raw_report)
-        #print(df)
-
         results = self.raw_report
         data = []
         N = len(results)

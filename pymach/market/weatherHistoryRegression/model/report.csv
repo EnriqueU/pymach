@@ -1,6 +1,2 @@
 Model,Mean,STD
-ExtraTreesRegressor,-5.122,1.6
-KNeighborsRegressor,-5.763,1.646
-AdaBoostRegressor,-6.512,1.035
-SVR,-6.992,1.939
-DecisionTreeRegressor,-8.709,3.021
+SVR,0.675,0.077

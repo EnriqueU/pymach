@@ -60,4 +60,4 @@ docs/_build/
 target/
 
 # Jupyter notebooks
-*.ipynb
+# *.ipynb

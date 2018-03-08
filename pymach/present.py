@@ -40,6 +40,7 @@ def report_analyze(figures, response, data_path, data_name):
 
     analyzer = analyze.Analyze(definer)
     dict_figures = OrderedDict()
+    table = analyzer.description()
 
     for fig in figures:
         data_name = data_name.replace(".csv", "")
@@ -49,7 +50,10 @@ def report_analyze(figures, response, data_path, data_name):
 
         dict_figures[fig] = analyzer.plot(fig)
         analyzer.save_plot(plot_path_plot)
-    return dict_figures
+
+    dict_report = {'plot': dict_figures, 'table': table}
+
+    return dict_report
 
 
 def report_model(response, data_path, data_name, problem_type):
@@ -225,7 +229,7 @@ def analyze_base():
 
 @app.route('/analyze_app', methods=['GET', 'POST'])
 def analyze_app():
-    figures = ['histogram', 'boxplot', 'correlation']
+    figures = ['Histogram', 'Boxplot', 'Correlation']
     response = "class"
     data_name = ''
     data_path = ''
