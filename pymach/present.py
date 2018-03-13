@@ -137,6 +137,7 @@ def allowed_file(file_name):
 def defineData():
     """  Show the files that have been uploaded """
     dirs = os.listdir(app.config['UPLOAD_DIR'])
+    dirs.sort(key=str.lower)
     return render_template('uploadData.html', files=dirs)
 
 
@@ -144,6 +145,7 @@ def defineData():
 def storedata():
     """  Upload a new file """
     dirs = os.listdir(app.config['UPLOAD_DIR'])
+    dirs.sort(key=str.lower)
 
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -167,6 +169,7 @@ def storedata():
             file_path = os.path.join(app.config['UPLOAD_DIR'], file_name)
             file.save(file_path)
             dirs = os.listdir(app.config['UPLOAD_DIR'])
+            dirs.sort(key=str.lower)
             return render_template(
                 'uploadData.html',
                 infoUpload='Uploaded!! '+file_name,
@@ -191,6 +194,7 @@ def chooseData():
     data_path = ''
     dire = ''
     dirs = os.listdir(app.config['UPLOAD_DIR'])
+    dirs.sort(key=str.lower)
     if request.method == 'POST':
         file_name = request.form['submit']
         data_name = file_name.replace(".csv", "")
@@ -212,6 +216,7 @@ def chooseData():
 @app.route('/analyze_base', methods=['GET', 'POST'])
 def analyze_base():
     dirs = os.listdir(app.config['UPLOAD_DIR'])
+    dirs.sort(key=str.lower)
     return render_template('analyzeData.html', files=dirs)
 
 
@@ -221,6 +226,7 @@ def analyze_app():
     data_name = ''
     data_path = ''
     dirs = os.listdir(app.config['UPLOAD_DIR'])
+    dirs.sort(key=str.lower)
     if request.method == 'POST':
         data_name = request.form['submit']
         data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
@@ -237,6 +243,7 @@ def analyze_app():
 @app.route('/model_base', methods=['GET', 'POST'])
 def model_base():
     dirs = os.listdir(app.config['UPLOAD_DIR'])
+    dirs.sort(key=str.lower)
     return render_template('models.html', files=dirs)
 
 
@@ -246,6 +253,7 @@ def model_app():
     data_name = ''
     data_path = ''
     dirs = os.listdir(app.config['UPLOAD_DIR'])
+    dirs.sort(key=str.lower)
     if request.method == 'POST':
         problem_type = request.form['typeModel']
         data_name = request.form['submit']
@@ -263,6 +271,7 @@ def model_app():
 @app.route('/improve_base', methods=['GET', 'POST'])
 def improve_base():
     dirs = os.listdir(app.config['UPLOAD_DIR'])
+    dirs.sort(key=str.lower)
     return render_template('improve.html', files=dirs)
 
 @app.route('/improve_app', methods=['GET', 'POST'])
@@ -271,6 +280,7 @@ def improve_app():
     data_name = ''
     data_path = ''
     dirs = os.listdir(app.config['UPLOAD_DIR'])
+    dirs.sort(key=str.lower)
     if request.method == 'POST':
         data_name = request.form['submit']
         data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
@@ -287,6 +297,7 @@ def improve_app():
 @app.route('/market_base', methods=['GET', 'POST'])
 def market_base():
     dirs = os.listdir(app.config['MARKET_DIR'])
+    dirs.sort(key=str.lower)
     return render_template('market.html', files=dirs)
 
 
@@ -296,6 +307,7 @@ def market_app():
     data_name = ''
     data_path = ''
     dirs = os.listdir(app.config['MARKET_DIR'])
+    dirs.sort(key=str.lower)
     if request.method == 'POST':
         data_name = request.form['submit']
         # data_path = os.path.join(app.config['MARKET_DIR'], data_name)
