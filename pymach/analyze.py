@@ -34,7 +34,7 @@ class Analyze():
         self.data = definer.data
         self.describe = None
         self.plot_html = None
-        self.X = definer.X
+        self.X = definer.X_1
 
     def pipeline(self):
         self.description()
@@ -43,10 +43,11 @@ class Analyze():
         return self
 
     def transform(self):
+        head = self.X.columns.values
         scaler = RobustScaler()
         self.data = pd.DataFrame(scaler.fit_transform(self.X))
         normalizer =  Normalizer()
-        self.data = pd.DataFrame(normalizer.fit_transform(self.data))
+        self.data = pd.DataFrame(normalizer.fit_transform(self.data),columns=head)
         return self.data
 
     def description(self):
