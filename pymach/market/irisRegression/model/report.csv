@@ -1,0 +1,6 @@
+Model,Mean,STD
+SVR,0.93,0.033
+KNeighborsRegressor,0.915,0.047
+AdaBoostRegressor,0.905,0.038
+ExtraTreesRegressor,0.903,0.049
+DecisionTreeRegressor,0.876,0.065
