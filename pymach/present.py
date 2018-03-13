@@ -149,6 +149,7 @@ def storedata():
 
     if request.method == 'POST':
         if 'file' not in request.files:
+            flash('Chosse a file .csv',"alert alert-danger")
             return render_template(
                 'uploadData.html',
                 infoUpload='Chosse a file .csv',
@@ -159,6 +160,7 @@ def storedata():
         data_name = ''
 
         if file.filename == '':
+            flash('file not selected',"alert alert-danger")
             return render_template(
                 'uploadData.html',
                 infoUpload='file not selected',
@@ -170,11 +172,13 @@ def storedata():
             file.save(file_path)
             dirs = os.listdir(app.config['UPLOAD_DIR'])
             dirs.sort(key=str.lower)
+            flash('Uploaded!! '+file_name,"alert alert-success")
             return render_template(
                 'uploadData.html',
                 infoUpload='Uploaded!! '+file_name,
                 files=dirs)
-
+        
+        flash('Error',"alert alert-danger")
         return render_template(
             'uploadData.html',
             infoUpload='Error',

@@ -1,6 +1,9 @@
 {% extends "layouts/base.html" %}
 
 {% block content %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+	
 <nav id="sidebar" class="sidebar" role="navigation">
     <div class="js-sidebar-content">
         <header class="logo hidden-sm-down">
@@ -103,6 +106,13 @@
 </nav>
 <div class="content-wrap">
     <main id="content" class="content" role="main">
+			{% if messages %}
+					{% for category, message in messages %}
+						<div class="{{ category }}">{{ message }}</div>
+					{% endfor %}
+				{% endif %}
+			{% endwith %}
+
         {%block content_dashboard%}{% endblock %}
     </main>
 </div>
