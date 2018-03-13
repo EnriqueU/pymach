@@ -44,6 +44,8 @@ class Define():
         self.samples = None
         self.size = None
         self.data = None
+        self.X_1 = None
+        self.X_2 = None
         self.X = None
         self.y = None
 
@@ -65,6 +67,7 @@ class Define():
                 self.data.rename(columns={self.head_y:'class'}, inplace=True)
                 self.data.dropna(inplace=True)
                 self.X = self.data.loc[:, self.data.columns != self.response]
+                self.X_1 = self.X
                 self.y = self.data.loc[:, self.data.columns == self.response]
                 self.y = np.ravel(self.y)
         except:
@@ -82,8 +85,8 @@ class Define():
     def categoricalToNumeric(self):
         if self.X.select_dtypes(include=[object]).shape[1]:
             numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
-            X_1 = self.X.select_dtypes(include=numerics)
-            X_2 = self.X.select_dtypes(include=[object])
+            self.X_1 = self.X.select_dtypes(include=numerics)
+            self.X_2 = self.X.select_dtypes(include=[object])
             le = preprocessing.LabelEncoder()
-            X_2 = X_2.apply(le.fit_transform)
-            self.X = pd.concat([X_1,X_2],axis=1)
+            self.X_2 = self.X_2.apply(le.fit_transform)
+            self.X = pd.concat([self.X_1,self.X_2],axis=1)
