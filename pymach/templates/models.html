@@ -51,39 +51,39 @@
         <!--<div><br> Choose a dataset <br></div>-->
     {% else %}
         <div class="col-lg-6">
-                <section class="widget">
-                    <header>
-                        <h3>
-                            <strong>Report Models</strong>
-                        </h3>
-                    </header>
-                    <div class="widget-body">
-                    <p class="fs-mini text-muted">
-                        Models' report
+            <section class="widget">
+                <header>
+                    <h3>
+                        <strong>Report Models</strong>
+                    </h3>
+                </header>
+                <div class="widget-body">
+                  <p class="fs-mini text-muted">
+                      Models' report
 
-                    </p>
-                        <div class="mt">
-                            <table id="datatable-table" class="table table-striped table-hover">
-                                <thead>
-                                <tr>
-                                    {% for item in report["table"].columns.values %}
-                                    <th><strong><label name="class" value={{ item }} > {{ item }} </label></strong></th>
-                                    {% endfor %}
-                                </tr>
-                                </thead>
-                                <tbody>
-                                    {% for index, line in report["table"].iterrows() %}
-                                    <tr>
-                                        {% for item in line.values %}
-                                            <td>{{ item }}</td>
-                                        {% endfor %}
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </section>
+                  </p>
+                  <div class="mt">
+                      <table id="datatable-table" class="table table-striped table-hover">
+                          <thead>
+                          <tr>
+                              {% for item in report["table"].columns.values %}
+                              <th><strong><label name="class" value={{ item }} > {{ item }} </label></strong></th>
+                              {% endfor %}
+                          </tr>
+                          </thead>
+                          <tbody>
+                              {% for index, line in report["table"].iterrows() %}
+                              <tr>
+                                  {% for item in line.values %}
+                                      <td>{{ item }}</td>
+                                  {% endfor %}
+                              </tr>
+                              {% endfor %}
+                          </tbody>
+                      </table>
+                  </div>
+                </div>
+            </section>
         </div>
     {% endif %}
 <!--End Report Models-->

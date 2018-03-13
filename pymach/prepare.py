@@ -33,26 +33,12 @@ class Prepare():
         """ This function chooses the best way to scale a data"""
         transformers = []
         scaler = RobustScaler()
+        normalizer = Normalizer()
         transformers.append(('scaler', scaler))
+        transformers.append(('normalizer', normalizer))
         return FeatureUnion(transformers)
 
     """
-    class Clean(BaseEstimator, TransformerMixin):
-        # A class for removing NAN values
-
-        def transform(self, X, y=None, **transform_params):
-            #X = pd.DataFrame(X)
-            X.dropna(inplace=True)
-            #return X.dropna()
-            return X
-
-        def fit_transform(self, X, y=None, **fit_params):
-            self.fit(X, y, **fit_params)
-            return self.transform(X)
-
-        def fit(self, X, y=None, **fit_params):
-            return self
-
     class CategoricalToNumeric(BaseEstimator, TransformerMixin):
         # A class for parsing categorical columns
 

@@ -124,10 +124,10 @@ class Evaluate():
         elif (self.definer.problem_type == "Regression"):
             models.append( ('SVR', SVR()) )
             #models.append( ('MLPRegressor', MLPRegressor(max_iter=1000)) )
-            #models.append( ('KNeighborsRegressor', KNeighborsRegressor(n_neighbors=5, n_jobs=-1)) )
-            #models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
-            #models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
-            #models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
+            models.append( ('KNeighborsRegressor', KNeighborsRegressor(n_neighbors=5, n_jobs=-1)) )
+            models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
+            models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
+            models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
         return models
 
     def build_pipelines(self):
@@ -154,8 +154,7 @@ class Evaluate():
 
     def evaluate_model(self, m):
         kfold = KFold(n_splits=self.num_folds, random_state=self.seed)
-        print(self.X_train)
-        print(self.y_train)
+
         if (self.definer.problem_type == "Classification"):
             result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring=self.scoring)
         elif (self.definer.problem_type == "Regression"):

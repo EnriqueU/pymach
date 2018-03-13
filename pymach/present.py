@@ -30,17 +30,14 @@ app.config['MARKET_DIR'] = os.path.join(APP_PATH, 'market')
 ALLOWED_EXTENSIONS = ['txt', 'csv', 'ml', 'html']
 
 
-def report_analyze(figures, response, data_path, data_name):
+def report_analyze(figures, data_path, data_name):
+    # Here read and save the description of the data
+    definer = define.Define(data_path=data_path,data_name=data_name).pipeline()
+    analyzer = analyze.Analyze(definer).pipeline()
 
-    definer = define.Define(
-            data_path=data_path,
-            header=None,
-            response=response).pipeline()
-            # Here read and save the description of the data
-
-    analyzer = analyze.Analyze(definer)
+    table1 = definer.describe
+    table2 = analyzer.describe
     dict_figures = OrderedDict()
-    table = analyzer.description()
 
     for fig in figures:
         data_name = data_name.replace(".csv", "")
@@ -51,14 +48,13 @@ def report_analyze(figures, response, data_path, data_name):
         dict_figures[fig] = analyzer.plot(fig)
         analyzer.save_plot(plot_path_plot)
 
-    dict_report = {'plot': dict_figures, 'table': table}
+    dict_report = {'plot': dict_figures, 'table1': table1, 'table2' :  table2}
 
     return dict_report
 
 
 def report_model(response, data_path, data_name, problem_type):
-    definer = define.Define(data_path=data_path,header=None,
-            response=response,problem_type=problem_type).pipeline()
+    definer = define.Define(data_path=data_path,data_name=data_name,problem_type=problem_type).pipeline()
     preparer = prepare.Prepare(definer).pipeline() # scaler
     selector = fselect.Select(definer).pipeline() # pca
     evaluator = evaluate.Evaluate(definer, preparer, selector).pipeline()
@@ -141,7 +137,6 @@ def allowed_file(file_name):
 def defineData():
     """  Show the files that have been uploaded """
     dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
     return render_template('uploadData.html', files=dirs)
 
 
@@ -149,7 +144,6 @@ def defineData():
 def storedata():
     """  Upload a new file """
     dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
 
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -173,7 +167,6 @@ def storedata():
             file_path = os.path.join(app.config['UPLOAD_DIR'], file_name)
             file.save(file_path)
             dirs = os.listdir(app.config['UPLOAD_DIR'])
-            dirs.sort(key=str.lower)
             return render_template(
                 'uploadData.html',
                 infoUpload='Uploaded!! '+file_name,
@@ -201,53 +194,41 @@ def chooseData():
     if request.method == 'POST':
         file_name = request.form['submit']
         data_name = file_name.replace(".csv", "")
-        data_path = os.path.join(app.config['UPLOAD_DIR'], data_name+'.html')
-
-    try: # si existe el archivo .html
-        dataset = None
-        with open(data_path) as f:
-            dataset = f.read()
-    except: # si no existe el archivo .html
         data_path = os.path.join(app.config['UPLOAD_DIR'], file_name)
         dire = open(data_path)
         return render_template(
                 'uploadData.html',
                 files=dirs,
-                dataset2 = dire,
+                dataset = dire,
                 data_name=data_name)
-
-    return render_template(
+    else:
+        return render_template(
             'uploadData.html',
-            files=dirs,
-            dataset=dataset, # se pasa matrix o html
-            data_name=data_name)
+            infoUpload='Error',
+            files=dirs)
 
 
 # ########################## Start Analyze Button ##################################
 @app.route('/analyze_base', methods=['GET', 'POST'])
 def analyze_base():
     dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
     return render_template('analyzeData.html', files=dirs)
 
 
 @app.route('/analyze_app', methods=['GET', 'POST'])
 def analyze_app():
     figures = ['Histogram', 'Boxplot', 'Correlation']
-    response = "class"
     data_name = ''
     data_path = ''
     dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
     if request.method == 'POST':
-        data_name = request.form['submit'] # pide el nombre
-        # se busca el archivo en el directorio y se guarda la ruta
+        data_name = request.form['submit']
         data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
 
     return render_template(
             'analyzeData.html',
             files=dirs,
-            figures=report_analyze(figures, response, data_path, data_name),
+            figures=report_analyze(figures, data_path, data_name),
             data_name=data_name)
 
 ########################### End Analyze Button ##################################
@@ -256,7 +237,6 @@ def analyze_app():
 @app.route('/model_base', methods=['GET', 'POST'])
 def model_base():
     dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
     return render_template('models.html', files=dirs)
 
 
@@ -266,7 +246,6 @@ def model_app():
     data_name = ''
     data_path = ''
     dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
     if request.method == 'POST':
         problem_type = request.form['typeModel']
         data_name = request.form['submit']
@@ -284,7 +263,6 @@ def model_app():
 @app.route('/improve_base', methods=['GET', 'POST'])
 def improve_base():
     dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
     return render_template('improve.html', files=dirs)
 
 @app.route('/improve_app', methods=['GET', 'POST'])
@@ -293,7 +271,6 @@ def improve_app():
     data_name = ''
     data_path = ''
     dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
     if request.method == 'POST':
         data_name = request.form['submit']
         data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
@@ -310,7 +287,6 @@ def improve_app():
 @app.route('/market_base', methods=['GET', 'POST'])
 def market_base():
     dirs = os.listdir(app.config['MARKET_DIR'])
-    dirs.sort(key=str.lower)
     return render_template('market.html', files=dirs)
 
 
@@ -320,7 +296,6 @@ def market_app():
     data_name = ''
     data_path = ''
     dirs = os.listdir(app.config['MARKET_DIR'])
-    dirs.sort(key=str.lower)
     if request.method == 'POST':
         data_name = request.form['submit']
         # data_path = os.path.join(app.config['MARKET_DIR'], data_name)

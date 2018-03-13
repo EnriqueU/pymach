@@ -19,6 +19,8 @@ import cufflinks as cf # Needed
 from plotly.offline.offline import _plot_html
 from plotly.offline import iplot
 from collections import namedtuple
+from sklearn.preprocessing import MinMaxScaler, Normalizer,\
+StandardScaler, RobustScaler, LabelEncoder, FunctionTransformer
 
 __all__ = [
     'read', 'description', 'classBalance', 'hist', 'density']
@@ -26,27 +28,32 @@ __all__ = [
 class Analyze():
     """ A class for data analysis """
     def __init__(self, definer):
-        """The init class.
-
-        Parameters
-        ----------
-        typeModel : string
-            String that indicates if the model will be trained for clasification
-            or regression.
-        className : string
-            String that indicates which column in the dataset is the class.
-        """
+        """The init class."""
         self.problem_type = definer.problem_type
         self.response = definer.response
         self.data = definer.data
+        self.describe = None
         self.plot_html = None
+        self.X = definer.X
+
+    def pipeline(self):
+        self.description()
+        self.transform()
+
+        return self
+
+    def transform(self):
+        scaler = RobustScaler()
+        self.data = pd.DataFrame(scaler.fit_transform(self.X))
+        normalizer =  Normalizer()
+        self.data = pd.DataFrame(normalizer.fit_transform(self.data))
+        return self.data
 
     def description(self):
         """Shows a basic data description ."""
-
-        description = self.data.describe().round(3)
-        description = description.reset_index()
-        return description
+        self.describe = self.data.describe().round(3)
+        self.describe = self.describe.reset_index()
+        return self.describe
 
     def classBalance(self):
         """Shows how balanced the class values are."""

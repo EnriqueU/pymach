@@ -3,18 +3,12 @@
 
 # Author: Gusseppe Bravo <gbravor@uni.pe>
 # License: BSD 3 clause
-"""
-This module will define the dataset. Thoughts:
-    - Type of model: Classification, Regression, Clustering.
-    - Data: save the dataset.
-    - header: the dataset's header.
-and so forth.
-"""
 
 __all__ = [
     'pipeline']
 
 import pandas as pd
+import numpy as np
 
 from collections import OrderedDict
 from tools import sizeof_file
@@ -25,36 +19,28 @@ class Define():
 
     Parameters
     ------------
-    data_name : string
-    The dataset's name which is expected to be a csv file.
-
-    header : list
-    The dataset's header, i.e, the features and the class name.
-
-    response : string
-    The name of the variable will be used for prediction.
+    data_name   : string (The dataset's name which is expected to be a csv file)
+    header      : list (The dataset's header, i.e, the features and the class name)
+    response    : string (The name of the variable will be used for prediction.)
+    problem_type: string (Classification and Regression.)
 
     Attributes
     -----------
-    n_features : int
-    number of features or predictors.
-
-    samples : int
-    Number of rows in the dataset.
+    n_features  : int (number of features or predictors)
+    samples     : int (Number of rows in the dataset)
 
     """
     def __init__(self,
-            data_path,
-            header=None,
-            response='class',
+            data_path,data_name,
             problem_type='classification'):
 
-        self.data_path = data_path
-        self.header = header
-        self.response = response
         self.problem_type = problem_type
+        self.data_path = data_path
+        self.data_name = data_name
+        self.response = 'class'
 
         self.n_features = None
+        self.describe = None
         self.samples = None
         self.size = None
         self.data = None
@@ -62,26 +48,25 @@ class Define():
         self.y = None
 
     def pipeline(self):
-        definers = []
-        definers.append(self.read)
-        definers.append(self.description)
-        definers.append(self.categoricalToNumeric)
-        [m() for m in definers]
+        self.read()
+        self.description()
+        self.categoricalToNumeric()
+
         return self
 
     def read(self):
+        self.head_y = None
+        self.count = None
         try:
-            if self.data_path is not None and self.response is not None:
-                if self.header is not None:
-                    self.data = pd.read_csv(self.data_path, names=self.header)
-                    self.header = self.header
-                else:
-                    self.data = pd.read_csv(self.data_path)
-
+            if self.data_path is not None:
+                self.data = pd.read_csv(self.data_path)
+                self.count = len(self.data.columns.values) - 1
+                self.head_y = self.data.columns.values[self.count]
+                self.data.rename(columns={self.head_y:'class'}, inplace=True)
                 self.data.dropna(inplace=True)
-
                 self.X = self.data.loc[:, self.data.columns != self.response]
-                self.y = self.data[self.response]
+                self.y = self.data.loc[:, self.data.columns == self.response]
+                self.y = np.ravel(self.y)
         except:
             print("Error reading")
 
@@ -90,16 +75,11 @@ class Define():
         self.samples = len(self.data)
         self.size = sizeof_file(self.data_path)
 
-        dict_description = OrderedDict()
-        dict_description["name"] = self.data_path
-        dict_description["n_features"] = self.n_features
-        dict_description["samples"] = self.samples
-        dict_description["size"] = self.size
-
-        return dict_description
+        self.describe = [self.data_name.replace(".csv",""), self.n_features, self.samples, self.size]
+        self.describe = pd.DataFrame([self.describe], columns = ["name","n_features","samples","size"])
+        return self.describe
 
     def categoricalToNumeric(self):
-        print(self.X.select_dtypes(include=[object]).shape[1])
         if self.X.select_dtypes(include=[object]).shape[1]:
             numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
             X_1 = self.X.select_dtypes(include=numerics)
@@ -107,5 +87,3 @@ class Define():
             le = preprocessing.LabelEncoder()
             X_2 = X_2.apply(le.fit_transform)
             self.X = pd.concat([X_1,X_2],axis=1)
-            print(self.X)
-            print(self.X.dtypes)

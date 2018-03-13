@@ -42,21 +42,15 @@ class Select():
             n_features = math.ceil(self.n_features/2)
             pca = PCA(n_components=n_features, svd_solver='randomized', whiten=True)
             transformers.append(('pca', pca))
-            if (self.problem_type == "Classification"):
+            """if (self.problem_type == "Classification"):
                 kbest = SelectKBest(score_func=f_classif, k=n_features)
                 transformers.append(('kbest', kbest))
             elif(self.problem_type == "Regression"):
                 kbest = SelectKBest(score_func=f_regression, k=n_features)
-                transformers.append(('kbest', kbest))
+                transformers.append(('kbest', kbest))"""
         else:
             pca = PCA(n_components=self.n_features, svd_solver='randomized', whiten=True)
             transformers.append(('pca', pca))
-            if (self.problem_type == "Classification"):
-                kbest = SelectKBest(score_func=f_classif, k=self.n_features)
-                transformers.append(('kbest', kbest))
-            elif(self.problem_type == "Regression"):
-                kbest = SelectKBest(score_func=f_regression, k=self.n_features)
-                transformers.append(('kbest', kbest))
         return FeatureUnion(transformers)
 
     class CustomFeature(TransformerMixin):
