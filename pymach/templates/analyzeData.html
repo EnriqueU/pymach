@@ -114,6 +114,30 @@
         </section>
     </div>
 </div>
+
+<div class="row">
+	<div class="col-lg-12">
+		<section class="widget">
+			<header>
+				<h3><strong>Options</strong></h3>
+			</header>
+			<div class="widget-body">
+				<center>
+					<form  action="/analyze_app?tipo=real" method="POST">
+						<button class="m-t-1 btn btn-info" value="{{data_name}}" name="submit" type="submit" > Real</button>
+					</form>
+					
+					<form  action="/analyze_app?tipo=normal" method="POST">
+						<button class="m-t-1 btn btn-info" value="{{data_name}}" name="submit" type="submit" >Transformed</button>
+					</form>
+				</center>
+			</div>
+		</section>
+		
+	</div>
+</div>
+
+
     {% for name, fig in figures["plot"].items() %}
         <div class="row">
             <div class="col-lg-12">

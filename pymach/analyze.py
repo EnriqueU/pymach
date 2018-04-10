@@ -36,10 +36,14 @@ class Analyze():
         self.plot_html = None
         self.X = definer.X_1
 
+    def pipelineReal(self):
+        self.description()
+        #self.transform()
+        return self
+
     def pipeline(self):
         self.description()
         self.transform()
-
         return self
 
     def transform(self):

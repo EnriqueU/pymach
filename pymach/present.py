@@ -30,10 +30,14 @@ app.config['MARKET_DIR'] = os.path.join(APP_PATH, 'market')
 ALLOWED_EXTENSIONS = ['txt', 'csv', 'ml', 'html']
 
 
-def report_analyze(figures, data_path, data_name):
+def report_analyze(figures, data_path, data_name,tipo='normal'):
+    # tipo indica normalizar o no los datos
     # Here read and save the description of the data
     definer = define.Define(data_path=data_path,data_name=data_name).pipeline()
-    analyzer = analyze.Analyze(definer).pipeline()
+    if tipo=='normal':
+    	analyzer = analyze.Analyze(definer).pipeline()
+    elif tipo=='real':
+        analyzer = analyze.Analyze(definer).pipelineReal()
 
     table1 = definer.describe
     table2 = analyzer.describe
@@ -49,9 +53,7 @@ def report_analyze(figures, data_path, data_name):
         analyzer.save_plot(plot_path_plot)
 
     dict_report = {'plot': dict_figures, 'table1': table1, 'table2' :  table2}
-
     return dict_report
-
 
 def report_model(response, data_path, data_name, problem_type):
     definer = define.Define(data_path=data_path,data_name=data_name,problem_type=problem_type).pipeline()
@@ -65,15 +67,14 @@ def report_model(response, data_path, data_name, problem_type):
     data_name = data_name.replace(".csv", "")
     plot_path = os.path.join(app.config['MARKET_DIR'], data_name, 'model')
     tools.path_exists(plot_path)
+
     plot_path_plot = os.path.join(plot_path, 'boxplot.html')
     evaluator.save_plot(plot_path_plot)
     plot_path_report = os.path.join(plot_path, 'report.csv')
     evaluator.save_report(plot_path_report)
 
     dict_report = {'plot': plot, 'table': table}
-
     return dict_report
-
 
 def report_improve(response, data_path):
     definer = define.Define(data_path=data_path,header=None,response=response).pipeline()
@@ -229,16 +230,26 @@ def analyze_app():
     figures = ['Histogram', 'Boxplot', 'Correlation']
     data_name = ''
     data_path = ''
+    archivo = ''
     dirs = os.listdir(app.config['UPLOAD_DIR'])
     dirs.sort(key=str.lower)
     if request.method == 'POST':
         data_name = request.form['submit']
         data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
+        tipo = request.args.get('tipo', default = 'real', type = str)
+        if tipo=='normal':
+            figures=report_analyze(figures, data_path, data_name)
+        elif tipo=='real':
+            figures=report_analyze(figures,data_path, data_name,tipo='real')
+    else:
+        return redirect(url_for('analyze_base'))
 
     return render_template(
             'analyzeData.html',
             files=dirs,
-            figures=report_analyze(figures, data_path, data_name),
+	    figures=figures,
+            #figures=report_analyze(figures, data_path, data_name),
+            #figures1=report_analyze(figures, data_path, data_name,'real'),
             data_name=data_name)
 
 ########################### End Analyze Button ##################################
@@ -249,7 +260,6 @@ def model_base():
     dirs = os.listdir(app.config['UPLOAD_DIR'])
     dirs.sort(key=str.lower)
     return render_template('models.html', files=dirs)
-
 
 @app.route('/model_app', methods=['GET', 'POST'])
 def model_app():
