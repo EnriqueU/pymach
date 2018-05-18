@@ -18,12 +18,9 @@ import multiprocessing as mp
 
 import numpy as np
 import pandas as pd
-#import matplotlib.pyplot as plt
-# import plotly.plotly as py
+
 import plotly.graph_objs as go
 import cufflinks as cf # Needed
-#sklearn warning
-#warnings.filterwarnings("ignore", category=DeprecationWarning)
 
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
@@ -54,6 +51,7 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.ensemble import VotingClassifier
+from sklearn.ensemble import BaggingRegressor
 
 # Algorithms Regression
 from sklearn.svm import SVR
@@ -61,11 +59,11 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.tree import DecisionTreeRegressor
 #Ensembles algorithms
-from sklearn.ensemble import ExtraTreesRegressor
-from sklearn.ensemble import AdaBoostRegressor
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import AdaBoostRegressor
+from sklearn.ensemble import BaggingRegressor
+from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.ensemble import GradientBoostingRegressor
-#from sklearn.ensemble import VotingRegressor
 
 class Evaluate():
     """ A class for resampling and evaluation """
@@ -90,49 +88,81 @@ class Evaluate():
         self.scoring = 'accuracy'
 
     def pipeline(self):
-        self.build_pipelines()
+        modelos = ['LinearDiscriminantAnalysis', 'SVC', 'GaussianNB', 'MLPClassifier', 'KNeighborsClassifier'
+                   'DecisionTreeClassifier', 'LogisticRegression', 'ExtraTreesClassifier', 'AdaBoostClassifier',
+                   'RandomForestClassifier', 'GradientBoostingClassifier', 'KNeighborsRegressor',
+                   'RandomForestRegressor', 'AdaBoostRegressor', 'BaggingRegressor', 'ExtraTreesRegressor',
+                   'GradientBoostingRegressor', 'DecisionTreeRegressor', 'MLPRegressor', 'SVR']
+        self.build_pipelines(modelos)
         self.split_data(self.test_size, self.seed)
         self.evaluate_pipelines()
         self.set_best_pipelines()
 
         return self
 
-    def set_models(self):
+    def set_models(self, modelos=None):
         rs = 1
         models = []
         if (self.definer.problem_type == "Classification"):
             # LDA : Warning(Variables are collinear)
-            models.append( ('LinearDiscriminantAnalysis', LinearDiscriminantAnalysis()) )
-            models.append( ('SVC', SVC(random_state=rs)) )
-            models.append( ('GaussianNB', GaussianNB()) )
-            #models.append( ('MLPClassifier', MLPClassifier(max_iter=1000,random_state=rs)) )
-            models.append( ('KNeighborsClassifier', KNeighborsClassifier()) )
-            models.append( ('DecisionTreeClassifier', DecisionTreeClassifier(random_state=rs)) )
-            models.append( ('LogisticRegression', LogisticRegression()) )
-
+            if 'LinearDiscriminantAnalysis' in modelos:
+                models.append( ('LinearDiscriminantAnalysis', LinearDiscriminantAnalysis()) )
+            if 'SVC' in modelos:
+                models.append( ('SVC', SVC(random_state=rs)) )
+            if 'GaussianNB' in modelos:
+                models.append( ('GaussianNB', GaussianNB()) )
+            if 'MLPClassifier' in modelos:
+                models.append( ('MLPClassifier', MLPClassifier(max_iter=1000,random_state=rs)) )
+            if 'KNeighborsClassifier' in modelos:
+                models.append( ('KNeighborsClassifier', KNeighborsClassifier()) )
+            if 'DecisionTreeClassifier' in modelos:
+                models.append( ('DecisionTreeClassifier', DecisionTreeClassifier(random_state=rs)) )
+            if 'LogisticRegression' in modelos:
+                models.append( ('LogisticRegression', LogisticRegression()) )
             # Bagging and Boosting
-            models.append( ('ExtraTreesClassifier', ExtraTreesClassifier(random_state=rs)) )
-            models.append( ('AdaBoostClassifier', AdaBoostClassifier(DecisionTreeClassifier(random_state=rs),random_state=rs)) )
-            models.append( ('RandomForestClassifier', RandomForestClassifier(random_state=rs)) )
-            models.append( ('GradientBoostingClassifier', GradientBoostingClassifier(random_state=rs)) )
+            if 'ExtraTreesClassifier' in modelos:
+                models.append( ('ExtraTreesClassifier', ExtraTreesClassifier(random_state=rs)) )
+            if 'AdaBoostClassifier' in modelos:
+                models.append( ('AdaBoostClassifier', AdaBoostClassifier(DecisionTreeClassifier(random_state=rs),random_state=rs)) )
+            if 'RandomForestClassifier' in modelos:
+                models.append( ('RandomForestClassifier', RandomForestClassifier(random_state=rs)) )
+            if 'GradientBoostingClassifier' in modelos:
+                models.append( ('GradientBoostingClassifier', GradientBoostingClassifier(random_state=rs)) )
             # Voting
-            estimators = []
-            estimators.append( ("Voting_GradientBoostingClassifier", GradientBoostingClassifier(random_state=rs)) )
-            estimators.append( ("Voting_ExtraTreesClassifier", ExtraTreesClassifier(random_state=rs)) )
-            voting = VotingClassifier(estimators)
-            models.append( ('VotingClassifier', voting) )
+            #estimators = []
+            #estimators.append( ("Voting_GradientBoostingClassifier", GradientBoostingClassifier(random_state=rs)) )
+            #estimators.append( ("Voting_ExtraTreesClassifier", ExtraTreesClassifier(random_state=rs)) )
+            #voting = VotingClassifier(estimators)
+            #models.append( ('VotingClassifier', voting) )
+
         elif (self.definer.problem_type == "Regression"):
-            models.append( ('SVR', SVR()) )
-            #models.append( ('MLPRegressor', MLPRegressor(max_iter=1000)) )
-            models.append( ('KNeighborsRegressor', KNeighborsRegressor(n_neighbors=5, n_jobs=-1)) )
-            models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
-            models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
-            models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
+            if 'KNeighborsRegressor' in modelos:
+                models.append( ('KNeighborsRegressor', KNeighborsRegressor(n_jobs=-1)) )
+            # sklearn.ensemble: Ensemble Methods
+            if 'RandomForestRegressor' in modelos:
+                models.append( ('RandomForestRegressor',RandomForestRegressor(random_state=rs, n_jobs=-1))  )
+            if 'AdaBoostRegressor' in modelos:
+                models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
+            if 'BaggingRegressor' in modelos:
+                models.append( ('BaggingRegressor', BaggingRegressor(random_state=rs)))
+            if 'ExtraTreesRegressor' in modelos:
+                models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
+            if 'GradientBoostingRegressor' in modelos:
+                models.append( ('GradientBoostingRegressor', GradientBoostingRegressor(random_state=rs)) )
+            #sklearn.tree: Decision Trees
+            if 'DecisionTreeRegressor' in modelos:
+                models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
+            #sklearn.neural_network: Neural network models
+            if 'MLPRegressor' in modelos:
+                models.append( ('MLPRegressor', MLPRegressor(max_iter=1000, random_state=rs)) )
+            # sklearn.svm: Support Vector Machines
+            if 'SVR' in modelos:
+                models.append( ('SVR', SVR()) )
         return models
 
-    def build_pipelines(self):
+    def build_pipelines(self, modelos=None):
         pipelines = []
-        models = self.set_models()
+        models = self.set_models(modelos)
         for m in models:
             pipelines.append((m[0],
                 Pipeline([
@@ -169,8 +199,8 @@ class Evaluate():
         m = []
         n = []
         for name, model in self.pipelines:
-            m.append(model)
             n.append(name)
+            m.append(model)
 
         num_cores=mp.cpu_count()
         print("****************** num_cores: ",num_cores," *********************")
@@ -182,26 +212,22 @@ class Evaluate():
             print("Modeling ...", n[i])
             mean = cv_results.mean()
             std = cv_results.std()
-            d = {'name': n[i], 'values': cv_results, 'mean': round(mean, 3), 'std': round(std, 3)}
+            d = {'name': n[i], 'values': cv_results, 'mean': round(mean, 5), 'std': round(std, 5)}
             results.append(d)
-            self.report.append([n[i], round(mean,3), round(std,3)])
+            self.report.append([n[i], round(mean,5), round(std,5)])
             print("Score ...", mean)
             i = i+1
         print("*****************************************************************")
 
         self.raw_report = sorted(results, key=lambda k: k['mean'], reverse=True)
-        #print(self.raw_report)
         headers = self.report.pop(0)
         df_report = pd.DataFrame(self.report, columns=headers)
         print(df_report)
         self.sort_report(df_report)
-        #self.plotModels(results, names)
 
     def sort_report(self, report):
-        """" Choose the best two algorithms"""
         report.sort_values(['Mean'], ascending=[False], inplace=True)
         self.report = report.copy()
-        #print(self.report)
 
     def set_best_pipelines(self):
         alg = list(self.report.Model)[0:2]
@@ -228,6 +254,7 @@ class Evaluate():
     def plot_models(self):
         """" Plot the algorithms by using box plots"""
         results = self.raw_report
+        print(type(self.raw_report))
         data = []
         N = len(results)
         c = ['hsl('+str(h)+',50%'+',50%)' for h in np.linspace(0, 270, N)]
@@ -293,13 +320,3 @@ class Evaluate():
         # with open(path, "w") as plot:
         self.report.to_csv(path, index=False)
         # plot.write(valuate.report.to_csv())
-
-    class CustomFeature(TransformerMixin):
-        """ A custome class for modeling """
-
-        def transform(self, X, **transform_params):
-            #X = pd.DataFrame(X)
-            return X
-
-        def fit(self, X, y=None, **fit_params):
-            return self

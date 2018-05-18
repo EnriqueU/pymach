@@ -32,7 +32,7 @@ class Define():
     """
     def __init__(self,
             data_path,data_name,
-            problem_type='classification'):
+            problem_type='Classification'):
 
         self.problem_type = problem_type
         self.data_path = data_path

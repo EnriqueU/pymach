@@ -29,28 +29,26 @@ from scipy.stats import expon
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 
+import multiprocessing as mp
+
 
 
 class Improve():
     """ A class for improving """
-
     bestConfiguration = None
-
-
-    def __init__(self, evaluator):
+    def __init__(self, evaluator, modelos):
         self.evaluator = evaluator
-        self.pipelines = evaluator.build_pipelines()
+        self.pipelines = evaluator.build_pipelines(modelos)
         self.search = None
         self.score_report = None
         self.full_report = None
         self.best_search = None
         self.best_model = None
         self.cv = 10
+        self.modelos = modelos
 
     def pipeline(self):
-
         self.improve_grid_search()
-
         return self
 
     # @property
@@ -360,87 +358,42 @@ class Improve():
             return self.mlperceptron_param(method)
         return None
 
+    def evaluate_model(self, pipelines):
+        n,m = pipelines
+        parameters = self.get_params(n, 'grid')
+        grid_search_t = GridSearchCV(m, parameters, verbose=1, cv=self.cv)
+        print("Performing grid search...", n)
+        grid_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
+        cv_results = [round(x[1],5) for x in grid_search_t.grid_scores_]
+        return cv_results
+
     def improve_grid_search(self):
-        dic_pipeline = dict(self.pipelines)
-        models = ['LogisticRegression',
-                  'LinearDiscriminantAnalysis',
-                  #  'GaussianNB',
-                  #'MLPClassifier',
-                  #  'SVC',
-                  'DecisionTreeClassifier',
-                  #  'KNeighborsClassifier',
-                  'RandomForestClassifier',
-                  'ExtraTreesClassifier',
-                  #  'GradientBoostingClassifier',
-                  #  'AdaBoostClassifier',
-                  #  'VotingClassifier'
-                  ]
-
-        # models = ['DecisionTreeClassifier', 'ExtraTreesClassifier', 'RandomForestClassifier']
-        report = []
-        grid_search = OrderedDict()
-        boxplot_error_loc = []
-        boxplot_score_grid = []
-
         self.evaluator.split_data()
-        for m in models:
-            pipeline = dic_pipeline[m]
-            parameters = self.get_params(m, 'grid')
+        self.report = [["Model", "Best_score"]]
+        results = []
 
-            grid_search_t = GridSearchCV(pipeline, parameters, n_jobs=-1,
-                                         verbose=1, cv=self.cv)
+        num_cores=mp.cpu_count()
+        print("****************** num_cores: ",num_cores," *********************")
+        pool = mp.Pool(processes=num_cores)
+        r = pool.map(self.evaluate_model,self.pipelines)
+        pool.close()
+        i=0
 
-            print("Performing grid search...", m)
-            # try:
-            start = time()
-            grid_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
-            end = time()
+        for cv_results in r:
+            print("Modeling ...", self.modelos[i])
+            best_score_ = max(cv_results)
+            d = {'name': self.modelos[i], 'values': cv_results, 'best_score': round(best_score_, 5)}
+            results.append(d)
+            self.report.append([self.modelos[i], round(best_score_, 5)])
+            print("Best score: %0.3f" % best_score_)
+            i = i+1
+        print("*****************************************************************")
 
-            dict_report = OrderedDict()
-            dict_report['name'] = m
-            dict_report['best_score'] = round(grid_search_t.best_score_, 3)
-
-
-        # Calculating the localization error
-        #     model_t = grid_search_t.best_estimator_
-        #     y_pred = model_t.predict(self.evaluator.X_test)
-        #     y_real = self.evaluator.y_test.values
-        #     error_loc, mean_loc = tools.mean_error_localization(y_pred, y_real)
-        #     bp_error_loc = {}
-        #     bp_error_loc['model'] = [tools.model_map_name(m)]*len(error_loc)
-        #     bp_error_loc['values'] = error_loc
-        #     boxplot_error_loc.append(bp_error_loc)
-        #     dict_report['mean_error'] = str(round(mean_loc, 3))+'m'
-
-
-            dict_report['fits'] = len(grid_search_t.grid_scores_)*self.cv
-            dict_report['time'] = str(round(((end-start)/60.0)/float(dict_report['fits']), 3))+'min'
-            # dict_report['time'] = str()+'min'
-            dict_report.update(grid_search_t.best_params_)
-    #         dict_report['best_params'] = grid_search.best_params_
-
-            report.append(dict_report)
-            grid_search[m] = grid_search_t
-    #         print("done in %0.3fs" % (t)
-    #         print()
-
-            print("Best score: %0.3f" % grid_search_t.best_score_)
-    #         print("Best parameters: ", grid)
-        #     except:
-        #         print("Unexpected error:", sys.exc_info()[0])
-
-
-        score_r, full_r = self.make_report(report)
-        self.score_report = score_r
-        self.full_report = full_r
-        self.search = grid_search
-        best_model = self.score_report['Model'].head(1).values[0]
-        self.best_search = self.search[best_model]
-        self.best_model = self.best_search.best_estimator_
-
-        # Save plots
-        # tools.error_loc_plot(boxplot_error_loc, self.evaluator.definer.data_path) # Boxplot error
-        self.plot_cv_score(self.evaluator.definer.data_path) # Boxplot error
+        self.score_report = sorted(results, key=lambda k: k['best_score'], reverse=True)
+        headers = self.report.pop(0)
+        df_report = pd.DataFrame(self.report, columns=headers)
+        print(df_report)
+        self.sort_report(df_report)
 
     def improve_random_search(self):
         dic_pipeline = dict(self.pipelines)
@@ -520,22 +473,9 @@ class Improve():
 
     def sort_report(self, report):
         """" Choose the best two algorithms"""
-
-        #sorted_t = sorted(report.items(), key=operator.itemgetter(1))
-        report.sort_values(['Score'], ascending=[False], inplace=True)
-        #self.bestAlgorithms = sorted_t[-2:]
-        # self.report = report.copy()
-        return report
-
-    # def chooseTopRanked(self, report):
-    #     """" Choose the best two algorithms"""
-    #
-    #     #sorted_t = sorted(report.items(), key=operator.itemgetter(1))
-    #     report.sort_values(['Mean'], ascending=[False], inplace=True)
-    #     #self.bestAlgorithms = sorted_t[-2:]
-    #     self.bestAlgorithms = report
-    #
-    #     print(self.bestAlgorithms)
+        report.sort_values(['Best_score'], ascending=[False], inplace=True)
+        self.report = report.copy()
+        #print(self.report)
 
     def plot_cv_score(self, path):
 
@@ -607,9 +547,6 @@ class Improve():
 
     def plot_models(self):
         """" Plot the algorithms by using box plots"""
-        #df = pd.DataFrame.from_dict(self.raw_results)
-        #print(df)
-
         results = self.score_report
         data = []
         N = len(results)
@@ -617,10 +554,8 @@ class Improve():
 
         for i, d in enumerate(results):
             trace = go.Box(
-                #y=d['Score'],
-                y=d[0],
-                #name=d['Model'],
-                name=d[1],
+                y=d['values'],
+                name=d['name'],
                 marker=dict(
                     color=c[i],
                 ),
@@ -629,11 +564,9 @@ class Improve():
             data.append(trace)
 
         text_scatter = go.Scatter(
-                #x=[d['Model'] for d in results],
-                x=[d[0] for d in results],
-                #y=[d['Score'] for d in results],
-                y=[d[1] for d in results],
-                name='score',
+                x=[d['name'] for d in results],
+                y=[d['best_score'] for d in results],
+                name='best score',
                 mode='markers',
                 text=['Explanation' for _ in results]
         )
@@ -643,10 +576,8 @@ class Improve():
             title='Hover over the bars to see the details',
             annotations=[
                 dict(
-                    x=results[0]['Model'],
-                    #x=results[0][0],
-                    y=results[0]['Score'],
-                    #y=results[0][1],
+                    x=results[0]['name'],
+                    y=results[0]['best_score'],
                     xref='x',
                     yref='y',
                     text='Best model',
@@ -656,10 +587,8 @@ class Improve():
                     ay=-40
                 ),
                 dict(
-                    x=results[-1]['Model'],
-                    #x=results[-1][0],
-                    y=results[-1]['Score'],
-                    #y=results[-1][1],
+                    x=results[-1]['name'],
+                    y=results[-1]['best_score'],
                     xref='x',
                     yref='y',
                     text='Worst model',
@@ -684,17 +613,6 @@ class Improve():
         for index, elem in enumerate(self.full_report):
             elem.to_csv(path+'_model'+str(index+1)+'.csv', index=False)
 
-
     def save_score_report(self, path):
 
         self.score_report.to_csv(path+'_score'+'.csv', index=False)
-
-    class CustomFeature(TransformerMixin):
-        """ A custome class for modeling """
-
-        def transform(self, X, **transform_params):
-            #X = pd.DataFrame(X)
-            return X
-
-        def fit(self, X, y=None, **fit_params):
-            return self

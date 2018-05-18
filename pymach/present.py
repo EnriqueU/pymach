@@ -75,16 +75,17 @@ def report_model(response, data_path, data_name, problem_type):
     return dict_report
 
 
-def report_improve(response, data_path):
-    definer = define.Define(data_path=data_path,header=None,response=response).pipeline()
+def report_improve(response, data_path, data_name, problem_type, modelos):
+    definer = define.Define(data_path=data_path,data_name=data_name,problem_type=problem_type).pipeline()
     preparer = prepare.Prepare(definer).pipeline()
     selector = fselect.Select(definer).pipeline()
     evaluator = evaluate.Evaluate(definer, preparer, selector)
-    improver = improve.Improve(evaluator).pipeline()
+    improver = improve.Improve(evaluator, modelos).pipeline()
 
     plot = improver.plot_models() # aqui esta el error
     table = improver.report
     dict_report = {'plot': plot, 'table': table}
+    #dict_report = {'table': table}
 
     return dict_report
 
@@ -177,7 +178,7 @@ def storedata():
                 'uploadData.html',
                 infoUpload='Uploaded!! '+file_name,
                 files=dirs)
-        
+
         flash('Error',"alert alert-danger")
         return render_template(
             'uploadData.html',
@@ -286,13 +287,16 @@ def improve_app():
     dirs = os.listdir(app.config['UPLOAD_DIR'])
     dirs.sort(key=str.lower)
     if request.method == 'POST':
+        problem_type = request.form['typeModelRC']
+        modelos = request.form.getlist('typeModel')
+        print(modelos)
         data_name = request.form['submit']
         data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
 
     return render_template(
             'improve.html',
             files=dirs,
-            report=report_improve(response, data_path),
+            report=report_improve(response, data_path, data_name, problem_type, modelos),
             data_name=data_name)
 
 ########################### End Improve Button ##################################
