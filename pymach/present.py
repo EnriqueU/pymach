@@ -77,14 +77,14 @@ def report_model(response, data_path, data_name, problem_type):
     return dict_report
 
 
-def report_improve(response, data_path, data_name, problem_type, modelos):
+def report_improve(data_path, data_name, problem_type, optimizer, modelos):
     definer = define.Define(data_path=data_path,data_name=data_name,problem_type=problem_type).pipeline()
     preparer = prepare.Prepare(definer).pipeline()
     selector = fselect.Select(definer).pipeline()
     evaluator = evaluate.Evaluate(definer, preparer, selector)
-    improver = improve.Improve(evaluator, modelos).pipeline()
+    improver = improve.Improve(evaluator, optimizer, modelos).pipeline()
 
-    plot = improver.plot_models() # aqui esta el error
+    plot = improver.plot_models()
     table = improver.report
     dict_report = {'plot': plot, 'table': table}
     #dict_report = {'table': table}
@@ -218,6 +218,7 @@ def chooseData():
             infoUpload='Error',
             files=dirs)
 
+########################### End Upload Button ##################################
 
 # ########################## Start Analyze Button ##################################
 @app.route('/analyze_base', methods=['GET', 'POST'])
@@ -249,7 +250,7 @@ def analyze_app():
     return render_template(
             'analyzeData.html',
             files=dirs,
-	    figures=figures,
+	        figures=figures,
             #figures=report_analyze(figures, data_path, data_name),
             #figures1=report_analyze(figures, data_path, data_name,'real'),
             data_name=data_name)
@@ -292,22 +293,22 @@ def improve_base():
 
 @app.route('/improve_app', methods=['GET', 'POST'])
 def improve_app():
-    response = "class"
     data_name = ''
     data_path = ''
     dirs = os.listdir(app.config['UPLOAD_DIR'])
     dirs.sort(key=str.lower)
     if request.method == 'POST':
+        optimizer = request.form['search']
         problem_type = request.form['typeModelRC']
         modelos = request.form.getlist('typeModel')
-        print(modelos)
-        data_name = request.form['submit']
+        # ---------------------------------------------------------------------
+        data_name = request.form['submit'] # choosed data
         data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
 
     return render_template(
             'improve.html',
             files=dirs,
-            report=report_improve(response, data_path, data_name, problem_type, modelos),
+            report=report_improve(data_path, data_name, problem_type, optimizer, modelos),
             data_name=data_name)
 
 ########################### End Improve Button ##################################

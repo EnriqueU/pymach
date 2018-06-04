@@ -25,7 +25,7 @@
                     {% else %}
             						<div>
             							<a data-toggle="collapse" href="#collapse1">Display to see datasets already in the system</a><br/>
-            						</div>
+            						</div><br>
 
             						<div id="collapse1" class="panel-collapse collapse">
                             <form  action="/analyze_app" method="POST">
@@ -122,14 +122,14 @@
 					<form  action="/analyze_app?tipo=real" method="POST">
 						<button class="m-t-1 btn btn-info" value="{{data_name}}" name="submit" type="submit" > Real</button>
 					</form>
-					
+
 					<form  action="/analyze_app?tipo=normal" method="POST">
 						<button class="m-t-1 btn btn-info" value="{{data_name}}" name="submit" type="submit" >Transformed</button>
 					</form>
 				</center>
 			</div>
 		</section>
-		
+
 	</div>
 </div>
 

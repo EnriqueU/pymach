@@ -7,4 +7,5 @@ LogisticRegression,0.875,0.08539
 AdaBoostClassifier,0.875,0.09317
 GaussianNB,0.85833,0.09895
 GradientBoostingClassifier,0.85833,0.08375
+VotingClassifier,0.85833,0.10574
 RandomForestClassifier,0.84167,0.11456

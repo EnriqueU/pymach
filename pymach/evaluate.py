@@ -71,8 +71,9 @@ class Evaluate():
         self.definer = definer
         self.preparer = preparer
         self.selector = selector
-        self.plot_html = None
+        self.problem_type = definer.problem_type
 
+        self.plot_html = None
         self.report = None
         self.raw_report = None
         self.best_pipelines = None
@@ -90,7 +91,7 @@ class Evaluate():
     def pipeline(self):
         modelos = ['LinearDiscriminantAnalysis', 'SVC', 'GaussianNB', 'MLPClassifier', 'KNeighborsClassifier'
                    'DecisionTreeClassifier', 'LogisticRegression', 'ExtraTreesClassifier', 'AdaBoostClassifier',
-                   'RandomForestClassifier', 'GradientBoostingClassifier', 'KNeighborsRegressor',
+                   'RandomForestClassifier', 'GradientBoostingClassifier', 'VotingClassifier', 'KNeighborsRegressor',
                    'RandomForestRegressor', 'AdaBoostRegressor', 'BaggingRegressor', 'ExtraTreesRegressor',
                    'GradientBoostingRegressor', 'DecisionTreeRegressor', 'MLPRegressor', 'SVR']
         self.build_pipelines(modelos)
@@ -103,7 +104,7 @@ class Evaluate():
     def set_models(self, modelos=None):
         rs = 1
         models = []
-        if (self.definer.problem_type == "Classification"):
+        if (self.problem_type == "Classification"):
             # LDA : Warning(Variables are collinear)
             if 'LinearDiscriminantAnalysis' in modelos:
                 models.append( ('LinearDiscriminantAnalysis', LinearDiscriminantAnalysis()) )
@@ -129,18 +130,19 @@ class Evaluate():
             if 'GradientBoostingClassifier' in modelos:
                 models.append( ('GradientBoostingClassifier', GradientBoostingClassifier(random_state=rs)) )
             # Voting
-            #estimators = []
-            #estimators.append( ("Voting_GradientBoostingClassifier", GradientBoostingClassifier(random_state=rs)) )
-            #estimators.append( ("Voting_ExtraTreesClassifier", ExtraTreesClassifier(random_state=rs)) )
-            #voting = VotingClassifier(estimators)
-            #models.append( ('VotingClassifier', voting) )
+            estimators = []
+            estimators.append( ("Voting_GradientBoostingClassifier", GradientBoostingClassifier(random_state=rs)) )
+            estimators.append( ("Voting_ExtraTreesClassifier", ExtraTreesClassifier(random_state=rs)) )
+            voting = VotingClassifier(estimators)
+            if 'VotingClassifier'  in modelos:
+                models.append( ('VotingClassifier', voting) )
 
-        elif (self.definer.problem_type == "Regression"):
+        elif (self.problem_type == "Regression"):
             if 'KNeighborsRegressor' in modelos:
-                models.append( ('KNeighborsRegressor', KNeighborsRegressor(n_jobs=-1)) )
+                models.append( ('KNeighborsRegressor', KNeighborsRegressor()) )
             # sklearn.ensemble: Ensemble Methods
             if 'RandomForestRegressor' in modelos:
-                models.append( ('RandomForestRegressor',RandomForestRegressor(random_state=rs, n_jobs=-1))  )
+                models.append( ('RandomForestRegressor',RandomForestRegressor(random_state=rs))  )
             if 'AdaBoostRegressor' in modelos:
                 models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
             if 'BaggingRegressor' in modelos:
@@ -185,9 +187,9 @@ class Evaluate():
     def evaluate_model(self, m):
         kfold = KFold(n_splits=self.num_folds, random_state=self.seed)
 
-        if (self.definer.problem_type == "Classification"):
+        if (self.problem_type == "Classification"):
             result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring=self.scoring)
-        elif (self.definer.problem_type == "Regression"):
+        elif (self.problem_type == "Regression"):
             result = cross_val_score(m, self.X_train, self.y_train, cv=kfold, scoring='r2')
         return result
 

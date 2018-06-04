@@ -36,19 +36,26 @@ import multiprocessing as mp
 class Improve():
     """ A class for improving """
     bestConfiguration = None
-    def __init__(self, evaluator, modelos):
+    def __init__(self, evaluator, optimizer, modelos):
         self.evaluator = evaluator
         self.pipelines = evaluator.build_pipelines(modelos)
+        self.modelos = modelos
+        self.optimizer = optimizer
+        self.problem_type = evaluator.problem_type
         self.search = None
         self.score_report = None
         self.full_report = None
         self.best_search = None
         self.best_model = None
         self.cv = 10
-        self.modelos = modelos
 
     def pipeline(self):
-        self.improve_grid_search()
+        if self.optimizer == 'GridSearchCV':
+            self.improve_grid_search()
+        elif self.optimizer == 'RandomizedSearchCV':
+            self.improve_random_search()
+        else:
+            pass
         return self
 
     # @property
@@ -68,9 +75,8 @@ class Improve():
     #         parameters['GradientBoostingClassifier__learning_rate'] = expon(0,1)
     #
     #     return parameters
-
-    def adaboost_param(self, method='grid'):
-
+    ############################# Classification ###############################
+    def adaboost_paramC(self, method='grid'):
         parameters = {
             # 'selector__extraTC__n_estimators': [10],
             # 'selector__extraTC__n_estimators': [10, 15],
@@ -90,7 +96,7 @@ class Improve():
 
         return parameters
 
-    def voting_param(self, method='grid'):
+    def voting_paramC(self, method='grid'):
 
         parameters = {
             # 'selector__extraTC__n_estimators': [10],
@@ -110,8 +116,7 @@ class Improve():
 
         return parameters
 
-    def gradientboosting_param(self, method='grid'):
-
+    def gradientboosting_paramC(self, method='grid'):
         parameters = {
             # 'selector__extraTC__n_estimators': [10],
             # 'selector__extraTC__n_estimators': [10, 15],
@@ -132,7 +137,7 @@ class Improve():
 
         return parameters
 
-    def extratrees_param(self, method='grid'):
+    def extratrees_paramC(self, method='grid'):
         parameters = {
             # 'selector__extraTC__n_estimators': [10],
             # 'selector__extraTC__n_estimators': [10, 15],
@@ -159,7 +164,7 @@ class Improve():
 
         return parameters
 
-    def randomforest_param(self, method='grid'):
+    def randomforest_paramC(self, method='grid'):
         parameters = {
             # 'selector__extraTC__n_estimators': [10],
             # 'selector__extraTC__n_estimators': [10, 15],
@@ -184,7 +189,7 @@ class Improve():
 
         return parameters
 
-    def decisiontree_param(self, method='grid'):
+    def decisiontree_paramC(self, method='grid'):
         parameters = {
             # 'selector__extraTC__n_estimators':  [10],
             # 'selector__extraTC__n_estimators':  [10, 15],
@@ -210,7 +215,7 @@ class Improve():
 
         return parameters
 
-    def lda_param(self, method='grid'):
+    def lda_paramC(self, method='grid'):
         parameters = {
             # 'selector__extraTC__n_estimators':  [10],
             # 'selector__extraTC__n_estimators':  [10, 15],
@@ -229,7 +234,7 @@ class Improve():
 
         return parameters
 
-    def svc_param(self, method='grid'):
+    def svc_paramC(self, method='grid'):
         parameters = {
             # 'selector__extraTC__n_estimators':  [10],
             # 'selector__extraTC__n_estimators':  [10, 15],
@@ -253,7 +258,7 @@ class Improve():
 
         return parameters
 
-    def knn_param(self, method='grid'):
+    def knn_paramC(self, method='grid'):
 
         parameters = {
             # 'selector__extraTC__n_estimators':  [10, 15],
@@ -276,7 +281,7 @@ class Improve():
 
         return parameters
 
-    def logistic_param(self, method='grid'):
+    def logistic_paramC(self, method='grid'):
 
         parameters = {
             # 'selector__extraTC__n_estimators':  [10],
@@ -297,7 +302,7 @@ class Improve():
 
         return parameters
 
-    def naivebayes_param(self, method='grid'):
+    def naivebayes_paramC(self, method='grid'):
 
         parameters = {
             # 'selector__extraTC__n_estimators':  [10],
@@ -314,8 +319,7 @@ class Improve():
 
         return parameters
 
-    def mlperceptron_param(self, method='grid'):
-
+    def mlperceptron_paramC(self, method='grid'):
         parameters = {
             # 'selector__extraTC__n_estimators':  [10],
             # 'selector__extraTC__n_estimators':  [10, 15],
@@ -331,37 +335,226 @@ class Improve():
 
         return parameters
 
+    ############################# Regression ###################################
+
+    def knn_paramR(self,method='grid'):
+        parameters = {
+            # 'selector__extraTC__n_estimators':  [10, 15],
+            # # 'selector__extraTC__n_estimators':  [10],
+            # 'selector__extraTC__criterion': ['gini','entropy'],
+            # 'selector__extraTC__n_jobs': [-1],
+            # 'selector__pca__svd_solver': ['randomized'],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            # 'selector__pca__whiten': [True],
+            'selector__pca__whiten': [True,False],
+            'KNeighborsRegressor__n_neighbors': [5,7,11],
+            'KNeighborsRegressor__weights': ['uniform','distance'],
+            'KNeighborsRegressor__algorithm': ['ball_tree','kd_tree','brute']
+            # 'KNeighborsClassifier__algorithm': ['auto']
+        }
+        return parameters
+
+    def randomforest_paramR(self,method='grid'):
+        parameters = {
+            # 'selector__extraTC__n_estimators': [10],
+            # 'selector__extraTC__n_estimators': [10, 15],
+            # # 'selector__extraTC__criterion': ['entropy'],
+            # 'selector__extraTC__criterion': ['gini', 'entropy'],
+            # 'selector__extraTC__n_jobs': [-1],
+            # 'selector__pca__svd_solver': ['randomized'],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            # 'selector__pca__whiten': [True],
+            'selector__pca__whiten': [True,False],
+            'RandomForestRegressor__n_estimators': [10, 15],
+            'RandomForestRegressor__criterion': ['mse', 'mae'],
+            'RandomForestRegressor__warm_start': [True,False]
+            # 'RandomForestClassifier__min_samples_leaf': [1,2,3,4,5],
+            # 'RandomForestClassifier__max_leaf_nodes': [2,3,4,5],
+            # 'RandomForestClassifier__max_depth': [2,3,4,5],
+        }
+        return parameters
+
+    def adaboost_paramR(self,method='grid'):
+        parameters = {
+            # 'selector__extraTC__n_estimators': [10],
+            # 'selector__extraTC__n_estimators': [10, 15],
+            # # 'selector__extraTC__criterion': ['entropy'],
+            # 'selector__extraTC__criterion': ['gini', 'entropy'],
+            # 'selector__extraTC__n_jobs': [-1],
+            # 'selector__pca__svd_solver': ['randomized'],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            # 'selector__pca__whiten': [True],
+            'selector__pca__whiten': [True,False],
+            'AdaBoostRegressor__n_estimators': [50, 100],
+            'AdaBoostRegressor__learning_rate': [0.01,0.05,0.1,0.3,1],
+            'AdaBoostRegressor__loss' : ['linear', 'square', 'exponential']
+        }
+        return parameters
+
+    def bagging_paramR(self,method='grid'):
+        parameters = {
+            # 'selector__extraTC__n_estimators': [10],
+            # 'selector__extraTC__n_estimators': [10, 15],
+            # # 'selector__extraTC__criterion': ['entropy'],
+            # 'selector__extraTC__criterion': ['gini', 'entropy'],
+            # 'selector__extraTC__n_jobs': [-1],
+            # 'selector__pca__svd_solver': ['randomized'],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            # 'selector__pca__whiten': [True],
+            'selector__pca__whiten': [True,False],
+            'BaggingRegressor__n_estimators': [50, 100],
+            'BaggingRegressor__warm_start': [True,False]
+        }
+        return parameters
+
+    def extratrees_paramR(self,method='grid'):
+        parameters = {
+            # 'selector__extraTC__n_estimators': [10],
+            # 'selector__extraTC__n_estimators': [10, 15],
+            # 'selector__extraTC__criterion': ['gini', 'entropy'],
+            # # 'selector__extraTC__criterion': ['entropy'],
+            # 'selector__extraTC__n_jobs': [-1],
+            # 'selector__pca__svd_solver': ['randomized'],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            # 'selector__pca__whiten': [True],
+            'selector__pca__whiten': [True,False],
+            'ExtraTreesRegressor__n_estimators': [10, 15, 20],
+            'ExtraTreesRegressor__criterion': ['mse', 'mae'],
+            'ExtraTreesRegressor__warm_start': [True, False]
+            # 'ExtraTreesClassifier__min_samples_leaf': [1,2,3,4,5],
+            # 'ExtraTreesClassifier__min_samples_leaf': range(200,1001,200),
+            # 'ExtraTreesClassifier__max_leaf_nodes': [2,3,4,5],
+            # 'ExtraTreesClassifier__max_depth': [2,3,4,5]
+        }
+        return parameters
+
+    def gradientboosting_paramR(self,method='grid'):
+        parameters = {
+            # 'selector__extraTC__n_estimators': [10],
+            # 'selector__extraTC__n_estimators': [10, 15],
+            # # 'selector__extraTC__criterion': ['entropy'],
+            # 'selector__extraTC__criterion': ['gini', 'entropy'],
+            # 'selector__extraTC__n_jobs': [-1],
+            # 'selector__pca__svd_solver': ['randomized'],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            # 'selector__pca__whiten': [True],
+            'selector__pca__whiten': [True,False],
+            'GradientBoostingRegressor__loss': ['ls','lad','huber','quantile'],
+            'GradientBoostingRegressor__n_estimators': [100, 200, 250],
+            'GradientBoostingRegressor__max_depth': [3,6,9],
+            'GradientBoostingRegressor__learning_rate': [0.1, 0.2, 0.3]
+        }
+        return parameters
+
+    def decisiontree_paramR(self,method='grid'):
+        parameters = {
+            # 'selector__extraTC__n_estimators':  [10],
+            # 'selector__extraTC__n_estimators':  [10, 15],
+            # # 'selector__extraTC__criterion': ['entropy'],
+            # 'selector__extraTC__criterion': ['gini','entropy'],
+            # 'selector__extraTC__n_jobs': [-1],
+            # 'selector__pca__svd_solver': ['randomized'],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            # 'selector__pca__whiten': [True],
+            'selector__pca__whiten': [True,False],
+            'DecisionTreeRegressor__criterion': ['mse','friedman_mse','mae'],
+            'DecisionTreeRegressor__splitter': ['best','random'],
+            'DecisionTreeRegressor__max_features': ['sqrt','log2', None]
+            # 'DecisionTreeClassifier__max_leaf_nodes': [2,3, None],
+            # 'DecisionTreeClassifier__max_depth': [2,3, None],
+            # 'DecisionTreeClassifier__min_samples_leaf': [1,3,5, None]
+
+        }
+        return parameters
+
+    def svc_paramR(self,method='grid'):
+        parameters = {
+            # 'selector__extraTC__n_estimators':  [10],
+            # 'selector__extraTC__n_estimators':  [10, 15],
+            # # 'selector__extraTC__criterion': ['entropy'],
+            # 'selector__extraTC__criterion': ['gini','entropy'],
+            # 'selector__extraTC__n_jobs': [-1],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            # 'selector__pca__svd_solver': ['randomized'],
+            # 'selector__pca__whiten': [True],
+            'selector__pca__whiten': [True,False],
+            'SVR__kernel': ['linear','poly', 'rbf','sigmoid'],
+            # 'SVC__kernel': ['rbf'],
+            'SVR__C': [1, 10, 100],
+
+        }
+        return parameters
+
+    def mlperceptron_paramR(self,method='grid'):
+        parameters = {
+            # 'selector__extraTC__n_estimators':  [10],
+            # 'selector__extraTC__n_estimators':  [10, 15],
+            # 'selector__extraTC__criterion': ['gini','entropy'],
+            # 'selector__extraTC__n_jobs': [-1],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'MLPRegressor__hidden_layer_sizes': [100],
+            'MLPRegressor__activation': ['identity', 'logistic', 'tanh', 'relu']
+        }
+        return parameters
+
+    ############################################################################
+
     def get_params(self, model, method):
-        if model == 'AdaBoostClassifier':
-            return self.adaboost_param(method)
-        elif model == 'VotingClassifier':
-            return self.voting_param(method)
-        elif model == 'GradientBoostingClassifier':
-            return self.gradientboosting_param(method)
-        elif model == 'ExtraTreesClassifier':
-            return self.extratrees_param(method)
-        elif model == 'RandomForestClassifier':
-            return self.randomforest_param(method)
-        elif model == 'DecisionTreeClassifier':
-            return self.decisiontree_param(method)
-        elif model == 'LinearDiscriminantAnalysis':
-            return self.lda_param(method)
-        elif model == 'SVC':
-            return self.svc_param(method)
-        elif model == 'KNeighborsClassifier':
-            return self.knn_param(method)
-        elif model == 'LogisticRegression':
-            return self.logistic_param(method)
-        elif model == 'GaussianNB':
-            return self.naivebayes_param(method)
-        elif model == 'MLPClassifier':
-            return self.mlperceptron_param(method)
+        if self.problem_type == 'Classification':
+            if model == 'AdaBoostClassifier':
+                return self.adaboost_paramC(method)
+            elif model == 'VotingClassifier':
+                return self.voting_paramC(method)
+            elif model == 'GradientBoostingClassifier':
+                return self.gradientboosting_paramC(method)
+            elif model == 'ExtraTreesClassifier':
+                return self.extratrees_paramC(method)
+            elif model == 'RandomForestClassifier':
+                return self.randomforest_paramC(method)
+            elif model == 'DecisionTreeClassifier':
+                return self.decisiontree_paramC(method)
+            elif model == 'LinearDiscriminantAnalysis':
+                return self.lda_paramC(method)
+            elif model == 'SVC':
+                return self.svc_paramC(method)
+            elif model == 'KNeighborsClassifier':
+                return self.knn_paramC(method)
+            elif model == 'LogisticRegression':
+                return self.logistic_paramC(method)
+            elif model == 'GaussianNB':
+                return self.naivebayes_paramC(method)
+            elif model == 'MLPClassifier':
+                return self.mlperceptron_paramC(method)
+        elif self.problem_type=='Regression':
+            if model == 'KNeighborsRegressor':
+                return self.knn_paramR(method)
+            elif model == 'RandomForestRegressor':
+                return self.randomforest_paramR(method)
+            elif model == 'AdaBoostRegressor':
+                return self.adaboost_paramR(method)
+            elif model == 'BaggingRegressor':
+                return self.bagging_paramR(method)
+            elif model == 'ExtraTreesRegressor':
+                return self.extratrees_paramR(method)
+            elif model == 'GradientBoostingRegressor':
+                return self.gradientboosting_paramR(method)
+            elif model == 'DecisionTreeRegressor':
+                return self.decisiontree_paramR(method)
+            elif model == 'SVR':
+                return self.svc_paramR(method)
+            elif model == 'MLPRegressor':
+                return self.mlperceptron_paramR(method)
+
         return None
 
     def evaluate_model(self, pipelines):
         n,m = pipelines
-        parameters = self.get_params(n, 'grid')
-        grid_search_t = GridSearchCV(m, parameters, verbose=1, cv=self.cv)
+        parameters = self.get_params(n, self.optimizer)
+        try:
+            grid_search_t = GridSearchCV(m, parameters, verbose=1, cv=self.cv)
+        except:
+            print("el error aqui")
         print("Performing grid search...", n)
         grid_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
         cv_results = [round(x[1],5) for x in grid_search_t.grid_scores_]
@@ -456,20 +649,6 @@ class Improve():
         best_model = self.score_report['Model'].head(1).values[0]
         self.best_search = self.search[best_model]
         self.best_model = self.best_search.best_estimator_
-
-    def make_report(self, report):
-        score_report = []
-        full_report = []
-
-        for r in report:
-            full_report.append(pd.DataFrame(list(r.items()), columns=['Topic', "Value"]))
-            score_report.append([r['name'], r['best_score']])
-            # score_report.append([r['name'], r['best_score'], r['mean_error']])
-
-        # score_report = pd.DataFrame(score_report, columns=['Model', "Score", "Error"])
-        score_report = pd.DataFrame(score_report, columns=['Model', "Score"])
-        score_report = self.sort_report(score_report)
-        return score_report, full_report
 
     def sort_report(self, report):
         """" Choose the best two algorithms"""
