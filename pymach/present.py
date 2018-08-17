@@ -240,19 +240,18 @@ def analyze_app():
         data_name = request.form['submit']
         data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
         tipo = request.args.get('tipo', default = 'real', type = str)
-        if tipo=='normal':
-            figures=report_analyze(figures, data_path, data_name)
-        elif tipo=='real':
-            figures=report_analyze(figures,data_path, data_name,tipo='real')
+        #if tipo=='normal':
+        figures1=report_analyze(figures, data_path, data_name)
+        #elif tipo=='real':
+        figures2=report_analyze(figures,data_path, data_name,tipo='real')
     else:
         return redirect(url_for('analyze_base'))
 
     return render_template(
             'analyzeData.html',
             files=dirs,
-	        figures=figures,
-            #figures=report_analyze(figures, data_path, data_name),
-            #figures1=report_analyze(figures, data_path, data_name,'real'),
+	        figures1=figures1,
+            figures2=figures2,
             data_name=data_name)
 
 ########################### End Analyze Button ##################################
