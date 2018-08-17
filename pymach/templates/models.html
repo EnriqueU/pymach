@@ -17,31 +17,26 @@
                     {% if not files %}
                         <div><br> There are not files in the system yet <br></div>
                     {% else %}
-                        <div>
-                          <a data-toggle="collapse" href="#collapse1">Display to see datasets already in the system</a><br/>
-                        </div>
-                        <div id="collapse1" class="panel-collapse collapse in">
-                            <form  action="/model_app" method="POST">
-                                <div><br> Type of problem: <br><br></div>
-                                <div class="radio-inline">
-                                  <input id="typeModel2" type="radio" class="radio" value="Classification" name="typeModel" checked/>
-                                  <label for="typeModel2"><strong>Classification</strong></label>
-                                </div>
-                                <div class="radio-inline">
-                                  <input id="typeModel1" type="radio" class="radio" value="Regression" name="typeModel" />
-                                  <label for="typeModel1"><strong>Regression</strong></label>
-                                </div><br><br>
+                        <form  action="/model_app" method="POST">
+                            <div><br> Type of problem: <br><br></div>
+                            <div class="radio-inline">
+                              <input id="typeModel2" type="radio" class="radio" value="Classification" name="typeModel" checked/>
+                              <label for="typeModel2"><strong>Classification</strong></label>
+                            </div>
+                            <div class="radio-inline">
+                              <input id="typeModel1" type="radio" class="radio" value="Regression" name="typeModel" />
+                              <label for="typeModel1"><strong>Regression</strong></label>
+                            </div><br><br>
 
-                                <p class="fs-mini text-muted">
-                                    Click to any button to build the models
-                                </p>
-                                {% for file in files %}
-                                    {% if file.endswith(".csv") or  file.endswith(".txt")%}
-                                        <button class="btn btn-secondary btn-block" value="{{file}}" name="submit" type="submit" >{{ file }}</button>
-                                    {% endif %}
-                                {% endfor %}
-                            </form>
-                        </div>
+                            <p class="fs-mini text-muted">
+                                Click to any button to build the models
+                            </p>
+                            {% for file in files %}
+                                {% if file.endswith(".csv") or  file.endswith(".txt")%}
+                                    <button class="btn btn-secondary btn-block" value="{{file}}" name="submit" type="submit" >{{ file }}</button>
+                                {% endif %}
+                            {% endfor %}
+                        </form>
                     {% endif %}
                 </div>
             </section>
@@ -60,7 +55,7 @@
                     {% else %}
                         <div>
                           <a data-toggle="collapse" href="#collapse1">Display to see datasets already in the system</a><br/>
-                        </div><br>
+                        </div>
                         <div id="collapse1" class="panel-collapse collapse">
                             <form  action="/model_app" method="POST">
                                 <div><br> Type of problem: <br><br></div>

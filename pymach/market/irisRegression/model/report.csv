@@ -1,6 +1,6 @@
 Model,Mean,STD
 SVR,0.93011,0.03331
-KNeighborsRegressor,0.9148,0.04724
+KNeighborsRegressor,0.91462,0.04717
 RandomForestRegressor,0.90817,0.0398
 GradientBoostingRegressor,0.90678,0.03716
 BaggingRegressor,0.90651,0.04971

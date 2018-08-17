@@ -20,18 +20,13 @@
                     {% if not files %}
                         <div><br> There are not files in the system yet <br></div>
                     {% else %}
-            						<div>
-            							<a data-toggle="collapse" href="#collapse1">Display to see datasets already in the system</a><br/>
-            						</div><br>
-            						<div id="collapse1" class="panel-collapse collapse in">
-                            <form  action="/analyze_app" method="POST">
-                                {% for file in files %}
-                                    {% if file.endswith(".csv") or  file.endswith(".txt")%}
-                                        <button class="btn btn-secondary btn-block" value="{{file}}" name="submit" type="submit" >{{ file }}</button>
-                                    {% endif %}
-                                {% endfor %}
-                            </form>
-            						</div>
+                        <form  action="/analyze_app" method="POST">
+                            {% for file in files %}
+                                {% if file.endswith(".csv") or  file.endswith(".txt")%}
+                                    <button class="btn btn-secondary btn-block" value="{{file}}" name="submit" type="submit" >{{ file }}</button>
+                                {% endif %}
+                            {% endfor %}
+                        </form>
                     {% endif %}
                 </div>
             </section>
@@ -55,7 +50,7 @@
                     {% else %}
             						<div>
             							<a data-toggle="collapse" href="#collapse1">Display to see datasets already in the system</a><br/>
-            						</div><br>
+            						</div>
             						<div id="collapse1" class="panel-collapse collapse">
                             <form  action="/analyze_app" method="POST">
                                 {% for file in files %}
@@ -182,9 +177,9 @@
                     <section class="widget">
                         <header>
                             <h3><strong>{{name}}</strong></h3>
-                            <div class="widget-controls">
-                                <a href="#" data-widgster="close"><i class="glyphicon glyphicon-remove"></i></a>
-                            </div>
+                            <!--div class="widget-controls">
+                                <a href="#" data-widgster="close"><i class=" 	glyphicon glyphicon-floppy-save"></i></a>
+                            </div-->
                         </header>
                         <div class="widget-body">
                             <p class="fs-mini text-muted">
