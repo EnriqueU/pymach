@@ -5,33 +5,30 @@
 # License: BSD 3 clause
 """
 This module provides ideas for improving some machine learning algorithms.
-
 """
 from __future__ import print_function
 import tools
 
-import warnings
-import sys
+import matplotlib.pyplot as plt
+import plotly.graph_objs as go
+import multiprocessing as mp
+import seaborn as sns
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-import plotly.graph_objs as go
-warnings.filterwarnings("ignore", category=DeprecationWarning)
+import warnings
+import sys
 
-from collections import OrderedDict
-from time import time
 from plotly.offline.offline import _plot_html
 from scipy.stats import randint
 from scipy.stats import uniform
 from scipy.stats import expon
+from collections import OrderedDict
+from time import time
 
 # from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-
-import multiprocessing as mp
-
+from searchers import GeneticSearchCV, EdasSearch
 
 
 class Improve():
@@ -54,114 +51,135 @@ class Improve():
         self.improve_grid_search()
         return self
 
+    ############################# Classification ###################################
     def adaboost_paramC(self, method='GridSearchCV'):
         if method == 'GridSearchCV':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
-                'AdaBoostClassifier__n_estimators': [50, 100],
-                'AdaBoostClassifier__learning_rate': [1.0, 2.0]
+                'AdaBoostClassifier__n_estimators': [50,75,100],
+                'AdaBoostClassifier__learning_rate': [0.5,1.0,1.5],
+                'AdaBoostClassifier__algorithm' : ['SAMME', 'SAMME.R']
             }
         elif  method == 'RandomizedSearchCV':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
-                'AdaBoostClassifier__n_estimators': randint(50,100),
-                'AdaBoostClassifier__learning_rate': expon(0,5)
+                'AdaBoostClassifier__n_estimators': randint(25,100),
+                'AdaBoostClassifier__learning_rate': [0.5,1.0,1.5],
+                'AdaBoostClassifier__learning_rate': expon(0,1),
+                'AdaBoostClassifier__algorithm' : ['SAMME', 'SAMME.R']
             }
-        else:
-            pass
-        return parameters
-
-    def voting_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        elif  method == 'GeneticSearchCV':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
-                'VotingClassifier__voting': ['hard', 'soft']
+                'AdaBoostClassifier__n_estimators': [50,75,100],
+                'AdaBoostClassifier__learning_rate': [0.5,1.0,1.5],
+                'AdaBoostClassifier__algorithm' : ['SAMME', 'SAMME.R']
             }
-        elif  method == 'RandomizedSearchCV':
-            parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'VotingClassifier__voting': ['hard', 'soft']
-            }
-        else:
-            pass
         return parameters
 
     def gradientboosting_paramC(self, method='GridSearchCV'):
         if method == 'GridSearchCV':
             parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'GradientBoostingClassifier__n_estimators': [200, 250],
-                'GradientBoostingClassifier__max_depth': [3,6,9],
-                'GradientBoostingClassifier__learning_rate': [0.1, 0.2, 0.3]
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'GradientBoostingClassifier__n_estimators': [200, 250],
+            'GradientBoostingClassifier__max_depth': [3,6,9],
+            'GradientBoostingClassifier__learning_rate': [0.1, 0.2, 0.3]
             }
         elif  method == 'RandomizedSearchCV':
             parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'GradientBoostingClassifier__n_estimators': randint(200,250),
-                'GradientBoostingClassifier__max_depth': randint(3,9),
-                'GradientBoostingClassifier__learning_rate': expon(0,1)
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'GradientBoostingClassifier__n_estimators': randint(200,250),
+            'GradientBoostingClassifier__max_depth': randint(3,9),
+            'GradientBoostingClassifier__learning_rate': expon(0,1)
             }
-        else:
+        elif  method == 'GeneticSearchCV':
             pass
         return parameters
 
-    def extratrees_paramC(self, method='GridSearchCV'):
+    def bagging_paramC(self,method='GridSearchCV'):
         if method == 'GridSearchCV':
             parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'ExtraTreesClassifier__n_estimators': [10, 15, 20],
-                'ExtraTreesClassifier__criterion': ['gini', 'entropy']
-                # 'ExtraTreesClassifier__min_samples_leaf': [1,2,3,4,5],
-                # 'ExtraTreesClassifier__min_samples_leaf': range(200,1001,200),
-                # 'ExtraTreesClassifier__max_leaf_nodes': [2,3,4,5],
-                # 'ExtraTreesClassifier__max_depth': [2,3,4,5]
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'BaggingClassifier__n_estimators': [50, 100],
+            'BaggingClassifier__warm_start': [True,False]
             }
         elif  method == 'RandomizedSearchCV':
             parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'ExtraTreesClassifier__n_estimators': [10, 15, 20],
-                'ExtraTreesClassifier__criterion': ['gini', 'entropy'],
-                'ExtraTreesClassifier__min_samples_leaf': randint(1,6),
-                # 'ExtraTreesClassifier__min_samples_leaf': range(200,1001,200),
-                 'ExtraTreesClassifier__max_leaf_nodes': randint(2,10),
-                 'ExtraTreesClassifier__max_depth': randint(1,10)
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'BaggingClassifier__n_estimators': randint(50,100),
+            'BaggingClassifier__warm_start': [True,False]
             }
-        else:
+        elif  method == 'GeneticSearchCV':
             pass
         return parameters
 
     def randomforest_paramC(self, method='GridSearchCV'):
         if method == 'GridSearchCV':
             parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'RandomForestClassifier__n_estimators': [10, 15],
-                'RandomForestClassifier__criterion': ['gini', 'entropy'],
-                'RandomForestClassifier__warm_start': [True,False]
-                # 'RandomForestClassifier__min_samples_leaf': [1,2,3,4,5],
-                # 'RandomForestClassifier__max_leaf_nodes': [2,3,4,5],
-                # 'RandomForestClassifier__max_depth': [2,3,4,5],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'RandomForestClassifier__n_estimators': [10, 15],
+            'RandomForestClassifier__criterion': ['gini', 'entropy'],
+            'RandomForestClassifier__warm_start': [True,False]
             }
         elif  method == 'RandomizedSearchCV':
             parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'RandomForestClassifier__min_samples_leaf': randint(1,20),
-                'RandomForestClassifier__max_leaf_nodes': randint(2,20),
-                'RandomForestClassifier__max_depth': randint(1,20)
-                # 'RandomForestClassifier__min_samples_leaf': [1,2,3,4,5],
-                # 'RandomForestClassifier__max_leaf_nodes': [2,3,4,5],
-                # 'RandomForestClassifier__max_depth': [2,3,4,5],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'RandomForestClassifier__n_estimators': randint(10,15),
+            'RandomForestClassifier__criterion': ['gini', 'entropy'],
+            'RandomForestClassifier__warm_start': [True,False]
             }
-        else:
+        elif  method == 'GeneticSearchCV':
+            pass
+        return parameters
+
+    def extratrees_paramC(self, method='GridSearchCV'):
+        if method == 'GridSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'ExtraTreesClassifier__n_estimators': [10, 15, 20],
+            'ExtraTreesClassifier__criterion': ['gini', 'entropy'],
+            'ExtraTreesClassifier__warm_start': [True, False]
+            }
+        elif  method == 'RandomizedSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'ExtraTreesClassifier__n_estimators': randint(10,20),
+            'ExtraTreesClassifier__criterion': ['gini', 'entropy'],
+            'ExtraTreesClassifier__warm_start': [True, False]
+            }
+        elif  method == 'GeneticSearchCV':
+            pass
+        return parameters
+
+    def knn_paramC(self, method='GridSearchCV'):
+        if method == 'GridSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'KNeighborsClassifier__n_neighbors': [5,10,15],
+            'KNeighborsClassifier__weights': ['uniform','distance'],
+            'KNeighborsClassifier__algorithm': ['ball_tree','kd_tree','brute']
+            }
+        elif  method == 'RandomizedSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'KNeighborsClassifier__n_neighbors': randint(5,15),
+            'KNeighborsClassifier__weights': ['uniform','distance'],
+            'KNeighborsClassifier__algorithm': ['ball_tree','kd_tree','brute']
+            }
+        elif  method == 'GeneticSearchCV':
             pass
         return parameters
 
@@ -173,18 +191,58 @@ class Improve():
                 'DecisionTreeClassifier__criterion': ['gini','entropy'],
                 'DecisionTreeClassifier__splitter': ['best','random'],
                 'DecisionTreeClassifier__max_features': ['sqrt','log2', None]
-                # 'DecisionTreeClassifier__max_leaf_nodes': [2,3, None],
-                # 'DecisionTreeClassifier__max_depth': [2,3, None],
-                # 'DecisionTreeClassifier__min_samples_leaf': [1,3,5, None]
 
             }
         elif  method == 'RandomizedSearchCV':
-            parameters['DecisionTreeClassifier__min_samples_leaf'] = randint(1,20)
-            parameters['DecisionTreeClassifier__max_leaf_nodes'] = randint(2,20)
-            parameters['DecisionTreeClassifier__max_depth'] = randint(1,20)
-        else:
+            parameters = {
+                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+                'selector__pca__whiten': [True,False],
+                'DecisionTreeClassifier__criterion': ['gini','entropy'],
+                'DecisionTreeClassifier__splitter': ['best','random'],
+                'DecisionTreeClassifier__max_features': ['sqrt','log2', None]
+            }
+        elif  method == 'GeneticSearchCV':
             pass
+        return parameters
 
+    def mlperceptron_paramC(self, method='GridSearchCV'):
+        if method == 'GridSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'MLPClassifier__hidden_layer_sizes': [50,100],
+            'MLPClassifier__activation': ['identity', 'logistic', 'tanh', 'relu']
+            }
+        elif  method == 'RandomizedSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'MLPClassifier__hidden_layer_sizes': randint(50,100),
+            'MLPClassifier__activation': ['identity', 'logistic', 'tanh', 'relu']
+            }
+        elif  method == 'GeneticSearchCV':
+            pass
+        return parameters
+
+    def svc_paramC(self, method='GridSearchCV'):
+        if method == 'GridSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'SVC__kernel': ['linear','poly', 'rbf','sigmoid'],
+            'SVC__C': [1, 10, 100],
+            'SVC__decision_function_shape': ['ovo','ovr']
+            }
+        elif  method == 'RandomizedSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'SVC__kernel': ['linear','poly', 'rbf','sigmoid'],
+            'SVC__C': randint(1,100),
+            'SVC__decision_function_shape': ['ovo','ovr']
+            }
+        elif  method == 'GeneticSearchCV':
+            pass
         return parameters
 
     def lda_paramC(self, method='GridSearchCV'):
@@ -193,48 +251,31 @@ class Improve():
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
                 'LinearDiscriminantAnalysis__solver': ['svd']
-
             }
         elif  method == 'RandomizedSearchCV':
             pass
-        else:
+        elif  method == 'GeneticSearchCV':
             pass
         return parameters
 
-    def svc_paramC(self, method='GridSearchCV'):
+    '''
+    def voting_paramC(self, method='GridSearchCV'):
         if method == 'GridSearchCV':
             parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'SVC__kernel': ['linear','poly', 'rbf','sigmoid'],
-                # 'SVC__kernel': ['rbf'],
-                'SVC__C': [1, 10, 100],
-                'SVC__decision_function_shape': ['ovo','ovr']
-                # 'SVC__decision_function_shape': ['ovr']
-
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'VotingClassifier__voting': ['hard', 'soft']
             }
         elif  method == 'RandomizedSearchCV':
-            pass
-        else:
-            pass
-        return parameters
-
-    def knn_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
             parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'KNeighborsClassifier__n_neighbors': [5,7,11],
-                'KNeighborsClassifier__weights': ['uniform','distance'],
-                'KNeighborsClassifier__algorithm': ['ball_tree','kd_tree','brute']
-                # 'KNeighborsClassifier__algorithm': ['auto']
-
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'VotingClassifier__voting': ['hard', 'soft']
             }
-        elif  method == 'RandomizedSearchCV':
-            parameters['KNeighborsClassifier__n_neighbors'] = randint(5,10)
         else:
             pass
-        return parameters
+            return parameters
+    '''
 
     def logistic_paramC(self, method='GridSearchCV'):
         if method == 'GridSearchCV':
@@ -248,7 +289,7 @@ class Improve():
             }
         elif  method == 'RandomizedSearchCV':
             pass
-        else:
+        elif  method == 'GeneticSearchCV':
             pass
         return parameters
 
@@ -261,121 +302,135 @@ class Improve():
             }
         elif  method == 'RandomizedSearchCV':
             pass
-        else:
+        elif  method == 'GeneticSearchCV':
             pass
         return parameters
 
-    def mlperceptron_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
-            parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'MLPClassifier__hidden_layer_sizes': [100],
-                'MLPClassifier__activation': ['identity', 'logistic', 'tanh', 'relu']
-            }
-        elif  method == 'RandomizedSearchCV':
-            pass
-        else:
-            pass
-        return parameters
 
     ############################# Regression ###################################
-
-    def knn_paramR(self,method='GridSearchCV'):
+    def adaboost_paramR(self,method='GridSearchCV'):
         if method == 'GridSearchCV':
             parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'KNeighborsRegressor__n_neighbors': [5,7,11],
-                'KNeighborsRegressor__weights': ['uniform','distance'],
-                'KNeighborsRegressor__algorithm': ['ball_tree','kd_tree','brute']
-                # 'KNeighborsClassifier__algorithm': ['auto']
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'AdaBoostRegressor__n_estimators': [50,75,100],
+            'AdaBoostRegressor__learning_rate': [0.5,1.0,1.5,2.0],
+            'AdaBoostRegressor__loss' : ['linear', 'square', 'exponential']
             }
         elif  method == 'RandomizedSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'AdaBoostRegressor__n_estimators': randint(50,100),
+            'AdaBoostRegressor__learning_rate': expon(0,5),
+            'AdaBoostRegressor__loss' : ['linear', 'square', 'exponential']
+            }
+        elif  method == 'GeneticSearchCV':
             pass
-        else:
+            return parameters
+
+    def gradientboosting_paramR(self,method='GridSearchCV'):
+        if method == 'GridSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'GradientBoostingRegressor__loss': ['ls','lad','huber','quantile'],
+            'GradientBoostingRegressor__n_estimators': [100, 200, 250],
+            'GradientBoostingRegressor__max_depth': [3,6,9],
+            'GradientBoostingRegressor__learning_rate': [0.1, 0.2, 0.3]
+            }
+        elif  method == 'RandomizedSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'GradientBoostingRegressor__loss': ['ls','lad','huber','quantile'],
+            'GradientBoostingRegressor__n_estimators': randint(200,250),
+            'GradientBoostingRegressor__max_depth': randint(3,9),
+            'GradientBoostingRegressor__learning_rate': expon(0,1)
+            }
+        elif  method == 'GeneticSearchCV':
+            pass
+            return parameters
+
+    def bagging_paramR(self,method='GridSearchCV'):
+        if method == 'GridSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'BaggingRegressor__n_estimators': [50, 100],
+            'BaggingRegressor__warm_start': [True,False]
+            }
+        elif  method == 'RandomizedSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'BaggingRegressor__n_estimators': randint(50,100),
+            'BaggingRegressor__warm_start': [True,False]
+            }
+        elif  method == 'GeneticSearchCV':
             pass
         return parameters
 
     def randomforest_paramR(self,method='GridSearchCV'):
         if method == 'GridSearchCV':
             parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'RandomForestRegressor__n_estimators': [10, 15],
-                'RandomForestRegressor__criterion': ['mse', 'mae'],
-                'RandomForestRegressor__warm_start': [True,False]
-                # 'RandomForestClassifier__min_samples_leaf': [1,2,3,4,5],
-                # 'RandomForestClassifier__max_leaf_nodes': [2,3,4,5],
-                # 'RandomForestClassifier__max_depth': [2,3,4,5],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'RandomForestRegressor__n_estimators': [10, 15],
+            'RandomForestRegressor__criterion': ['mse', 'mae'],
+            'RandomForestRegressor__warm_start': [True,False]
             }
         elif  method == 'RandomizedSearchCV':
-            pass
-        else:
-            pass
-        return parameters
-
-    def adaboost_paramR(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
             parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'AdaBoostRegressor__n_estimators': [50, 100],
-                'AdaBoostRegressor__learning_rate': [0.01,0.05,0.1,0.3,1],
-                'AdaBoostRegressor__loss' : ['linear', 'square', 'exponential']
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'RandomForestRegressor__n_estimators': randint(10,15),
+            'RandomForestRegressor__criterion': ['mse', 'mae'],
+            'RandomForestRegressor__warm_start': [True,False]
             }
-        elif  method == 'RandomizedSearchCV':
-            pass
-        else:
-            pass
-        return parameters
-
-    def bagging_paramR(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
-            parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'BaggingRegressor__n_estimators': [50, 100],
-                'BaggingRegressor__warm_start': [True,False]
-            }
-        elif  method == 'RandomizedSearchCV':
-            pass
-        else:
+        elif  method == 'GeneticSearchCV':
             pass
         return parameters
 
     def extratrees_paramR(self,method='GridSearchCV'):
         if method == 'GridSearchCV':
             parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'ExtraTreesRegressor__n_estimators': [10, 15, 20],
-                'ExtraTreesRegressor__criterion': ['mse', 'mae'],
-                'ExtraTreesRegressor__warm_start': [True, False]
-                # 'ExtraTreesClassifier__min_samples_leaf': [1,2,3,4,5],
-                # 'ExtraTreesClassifier__min_samples_leaf': range(200,1001,200),
-                # 'ExtraTreesClassifier__max_leaf_nodes': [2,3,4,5],
-                # 'ExtraTreesClassifier__max_depth': [2,3,4,5]
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'ExtraTreesRegressor__n_estimators': [10, 15, 20],
+            'ExtraTreesRegressor__criterion': ['mse', 'mae'],
+            'ExtraTreesRegressor__warm_start': [True, False]
             }
         elif  method == 'RandomizedSearchCV':
-            pass
-        else:
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'ExtraTreesRegressor__n_estimators': randint(10,20),
+            'ExtraTreesRegressor__criterion': ['mse', 'mae'],
+            'ExtraTreesRegressor__warm_start': [True, False]
+            }
+        elif  method == 'GeneticSearchCV':
             pass
         return parameters
 
-    def gradientboosting_paramR(self,method='GridSearchCV'):
+    def knn_paramR(self,method='GridSearchCV'):
         if method == 'GridSearchCV':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
-                'GradientBoostingRegressor__loss': ['ls','lad','huber','quantile'],
-                'GradientBoostingRegressor__n_estimators': [100, 200, 250],
-                'GradientBoostingRegressor__max_depth': [3,6,9],
-                'GradientBoostingRegressor__learning_rate': [0.1, 0.2, 0.3]
+                'KNeighborsRegressor__n_neighbors': [5,10,15],
+                'KNeighborsRegressor__weights': ['uniform','distance'],
+                'KNeighborsRegressor__algorithm': ['ball_tree','kd_tree','brute']
             }
         elif  method == 'RandomizedSearchCV':
-            pass
-        else:
+            parameters = {
+                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+                'selector__pca__whiten': [True,False],
+                'KNeighborsRegressor__n_neighbors': randint(5,15),
+                'KNeighborsRegressor__weights': ['uniform','distance'],
+                'KNeighborsRegressor__algorithm': ['ball_tree','kd_tree','brute']
+            }
+        elif  method == 'GeneticSearchCV':
             pass
         return parameters
 
@@ -387,13 +442,35 @@ class Improve():
                 'DecisionTreeRegressor__criterion': ['mse','friedman_mse','mae'],
                 'DecisionTreeRegressor__splitter': ['best','random'],
                 'DecisionTreeRegressor__max_features': ['sqrt','log2', None]
-                # 'DecisionTreeClassifier__max_leaf_nodes': [2,3, None],
-                # 'DecisionTreeClassifier__max_depth': [2,3, None],
-                # 'DecisionTreeClassifier__min_samples_leaf': [1,3,5, None]
             }
         elif  method == 'RandomizedSearchCV':
+            parameters = {
+                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+                'selector__pca__whiten': [True,False],
+                'DecisionTreeRegressor__criterion': ['mse','friedman_mse','mae'],
+                'DecisionTreeRegressor__splitter': ['best','random'],
+                'DecisionTreeRegressor__max_features': ['sqrt','log2', None]
+            }
+        elif  method == 'GeneticSearchCV':
             pass
-        else:
+        return parameters
+
+    def mlperceptron_paramR(self,method='GridSearchCV'):
+        if method == 'GridSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'MLPRegressor__hidden_layer_sizes': [50,100],
+            'MLPRegressor__activation': ['identity', 'logistic', 'tanh', 'relu']
+            }
+        elif  method == 'RandomizedSearchCV':
+            parameters = {
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__whiten': [True,False],
+            'MLPRegressor__hidden_layer_sizes': randint(50,100),
+            'MLPRegressor__activation': ['identity', 'logistic', 'tanh', 'relu']
+            }
+        elif  method == 'GeneticSearchCV':
             pass
         return parameters
 
@@ -403,27 +480,16 @@ class Improve():
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
                 'SVR__kernel': ['linear','poly', 'rbf','sigmoid'],
-                # 'SVC__kernel': ['rbf'],
-                'SVR__C': [1, 10, 100],
-
+                'SVR__C': [1, 10, 100]
             }
         elif  method == 'RandomizedSearchCV':
-            pass
-        else:
-            pass
-        return parameters
-
-    def mlperceptron_paramR(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
-                'MLPRegressor__hidden_layer_sizes': [100],
-                'MLPRegressor__activation': ['identity', 'logistic', 'tanh', 'relu']
+                'SVR__kernel': ['linear','poly', 'rbf','sigmoid'],
+                'SVR__C': randint(1,100)
             }
-        elif  method == 'RandomizedSearchCV':
-            pass
-        else:
+        elif  method == 'GeneticSearchCV':
             pass
         return parameters
 
@@ -433,47 +499,49 @@ class Improve():
         if self.problem_type == 'Classification':
             if model == 'AdaBoostClassifier':
                 return self.adaboost_paramC(method)
-            elif model == 'VotingClassifier':
-                return self.voting_paramC(method)
             elif model == 'GradientBoostingClassifier':
                 return self.gradientboosting_paramC(method)
-            elif model == 'ExtraTreesClassifier':
-                return self.extratrees_paramC(method)
+            elif model == 'BaggingClassifier':
+                return self.bagging_paramC(method)
             elif model == 'RandomForestClassifier':
                 return self.randomforest_paramC(method)
-            elif model == 'DecisionTreeClassifier':
-                return self.decisiontree_paramC(method)
-            elif model == 'LinearDiscriminantAnalysis':
-                return self.lda_paramC(method)
-            elif model == 'SVC':
-                return self.svc_paramC(method)
+            elif model == 'ExtraTreesClassifier':
+                return self.extratrees_paramC(method)
             elif model == 'KNeighborsClassifier':
                 return self.knn_paramC(method)
+            elif model == 'DecisionTreeClassifier':
+                return self.decisiontree_paramC(method)
+            elif model == 'MLPClassifier':
+                return self.mlperceptron_paramC(method)
+            elif model == 'VotingClassifier':
+                return self.voting_paramC(method)
+            elif model == 'SVC':
+                return self.svc_paramC(method)
+            elif model == 'LinearDiscriminantAnalysis':
+                return self.lda_paramC(method)
             elif model == 'LogisticRegression':
                 return self.logistic_paramC(method)
             elif model == 'GaussianNB':
                 return self.naivebayes_paramC(method)
-            elif model == 'MLPClassifier':
-                return self.mlperceptron_paramC(method)
         elif self.problem_type=='Regression':
-            if model == 'KNeighborsRegressor':
-                return self.knn_paramR(method)
-            elif model == 'RandomForestRegressor':
-                return self.randomforest_paramR(method)
-            elif model == 'AdaBoostRegressor':
+            if model == 'AdaBoostRegressor':
                 return self.adaboost_paramR(method)
-            elif model == 'BaggingRegressor':
-                return self.bagging_paramR(method)
-            elif model == 'ExtraTreesRegressor':
-                return self.extratrees_paramR(method)
             elif model == 'GradientBoostingRegressor':
                 return self.gradientboosting_paramR(method)
+            elif model == 'BaggingRegressor':
+                return self.bagging_paramR(method)
+            elif model == 'RandomForestRegressor':
+                return self.randomforest_paramR(method)
+            elif model == 'ExtraTreesRegressor':
+                return self.extratrees_paramR(method)
+            elif model == 'KNeighborsRegressor':
+                return self.knn_paramR(method)
             elif model == 'DecisionTreeRegressor':
                 return self.decisiontree_paramR(method)
-            elif model == 'SVR':
-                return self.svc_paramR(method)
             elif model == 'MLPRegressor':
                 return self.mlperceptron_paramR(method)
+            elif model == 'SVR':
+                return self.svc_paramR(method)
 
         return None
 
@@ -481,24 +549,27 @@ class Improve():
         n,m = pipelines
         parameters = self.get_params(n, self.optimizer)
         if self.optimizer == 'GridSearchCV':
-            grid_search_t = GridSearchCV(m, parameters, verbose=1, cv=self.cv)
-            print("Performing search...", n)
+            grid_search_t = GridSearchCV(m, parameters, verbose=1)
+            print("Performing GridSearchCV...", n)
             grid_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
-            cv_results = [round(x[1],5) for x in grid_search_t.grid_scores_]
-            print(grid_search_t.best_params_)
-            return cv_results
+            return [grid_search_t.best_score_,grid_search_t.best_params_]
         elif self.optimizer == 'RandomizedSearchCV':
-            random_search_t = RandomizedSearchCV(m, parameters, n_jobs=-1, verbose=1)
-            print("Performing search...", n)
+            random_search_t = RandomizedSearchCV(m, parameters, verbose=1)
+            print("Performing RandomizedSearchCV...", n)
             random_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
-            cv_results = [round(x[1],5) for x in random_search_t.grid_scores_]
-            return cv_results
-        else:
-            pass
+            return [random_search_t.best_score_,random_search_t.best_params_]
+        elif self.optimizer == 'GeneticSearchCV':
+            genetic_search_t = GeneticSearchCV(m, parameters, verbose=1)
+            print("Performing GeneticSearchCV...", n)
+            genetic_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
+            return [genetic_search_t.best_score_,genetic_search_t.best_params_]
+        elif self.optimizer == 'EdasSearch':
+            eda_search_t = EdasHyperparameterSearch(getModelAccuracy, parametros, estimador,iterations=2, sample_size=15, select_ratio=0.3, debug=False)
+            print("Performing EdasSearch...", n)
 
     def improve_grid_search(self):
         self.evaluator.split_data()
-        self.report = [["Model", "Best_score"]]
+        self.report = [["Model", "Best_score", "Parameters"]]
         results = []
 
         num_cores=mp.cpu_count()
@@ -510,11 +581,10 @@ class Improve():
 
         for cv_results in r:
             print("Modeling ...", self.modelos[i])
-            best_score_ = max(cv_results)
-            d = {'name': self.modelos[i], 'values': cv_results, 'best_score': round(best_score_, 5)}
+            d = {'name': self.modelos[i], 'best_score': round(cv_results[0], 5), 'parameters': cv_results[1]}
             results.append(d)
-            self.report.append([self.modelos[i], round(best_score_, 5)])
-            print("Best score: %0.3f" % best_score_)
+            self.report.append([self.modelos[i], round(cv_results[0], 5), cv_results[1]])
+            print("Best score: %0.3f" % cv_results[0])
             i = i+1
         print("*****************************************************************")
 
@@ -551,7 +621,7 @@ class Improve():
 
         for i, d in enumerate(results):
             trace = go.Box(
-                y=d['values'],
+                y=d['best_score'],
                 name=d['name'],
                 marker=dict(
                     color=c[i],
@@ -568,34 +638,53 @@ class Improve():
                 text=['Explanation' for _ in results]
         )
         data.append(text_scatter)
-        layout = go.Layout(
-            #showlegend=False,
-            title='Hover over the bars to see the details',
-            annotations=[
-                dict(
-                    x=results[0]['name'],
-                    y=results[0]['best_score'],
-                    xref='x',
-                    yref='y',
-                    text='Best model',
-                    showarrow=True,
-                    arrowhead=7,
-                    ax=0,
-                    ay=-40
-                ),
-                dict(
-                    x=results[-1]['name'],
-                    y=results[-1]['best_score'],
-                    xref='x',
-                    yref='y',
-                    text='Worst model',
-                    showarrow=True,
-                    arrowhead=7,
-                    ax=0,
-                    ay=-40
-                )
-            ]
-        )
+        if len(self.score_report) == 1:
+            layout = go.Layout(
+                #showlegend=False,
+                title='Hover over the bars to see the details',
+                annotations=[
+                    dict(
+                        x=results[0]['name'],
+                        y=results[0]['best_score'],
+                        xref='x',
+                        yref='y',
+                        text='Best model',
+                        showarrow=True,
+                        arrowhead=7,
+                        ax=0,
+                        ay=-40
+                    )
+                ]
+            )
+        else:
+            layout = go.Layout(
+                #showlegend=False,
+                title='Hover over the bars to see the details',
+                annotations=[
+                    dict(
+                        x=results[0]['name'],
+                        y=results[0]['best_score'],
+                        xref='x',
+                        yref='y',
+                        text='Best model',
+                        showarrow=True,
+                        arrowhead=7,
+                        ax=0,
+                        ay=-40
+                    ),
+                    dict(
+                        x=results[-1]['name'],
+                        y=results[-1]['best_score'],
+                        xref='x',
+                        yref='y',
+                        text='Worst model',
+                        showarrow=True,
+                        arrowhead=7,
+                        ax=0,
+                        ay=-40
+                    )
+                ]
+            )
 
         fig = go.Figure(data=data, layout=layout)
 

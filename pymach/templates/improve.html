@@ -29,8 +29,12 @@
                               <label for="search2"><strong>RandomizedSearchCV</strong></label>
                             </div>
                             <div class="radio-inline">
-                              <input id="search3" type="radio" class="radio" value="Genetic" name="search" />
-                              <label for="search3"><strong>Genetic</strong></label>
+                              <input id="search3" type="radio" class="radio" value="GeneticSearchCV" name="search" />
+                              <label for="search3"><strong>GeneticSearchCV</strong></label>
+                            </div>
+                            <div class="radio-inline">
+                              <input id="search4" type="radio" class="radio" value="EdasSearch" name="search" />
+                              <label for="search4"><strong>EdasSearch</strong></label>
                             </div>
                             <!-- #################################################################### -->
                             <div><br> Type of problem: <br></div>
@@ -40,45 +44,52 @@
                                   <input id="typeModel2" type="radio" class="radio" value="Classification" name="typeModelRC" checked/>
                                   <label for="typeModel2"><strong>Classification</strong></label>
                                 </div><br><br>
+                                <p class="fs-mini text-muted">Ensembles Methods</p>
                                 <div class="checkbox-inline">
-                                  <input id="classification1" type="checkbox" class="checkbox" value="LinearDiscriminantAnalysis" name="typeModel" />
-                                  <label for="classification1">LinearDiscriminantAnalysis</label>
+                                  <input id="classification1" type="checkbox" class="checkbox" value="AdaBoostClassifier" name="typeModel" />
+                                  <label for="classification1">AdaBoostClassifier</label>
                                 </div><br>
                                 <div class="checkbox-inline">
-                                  <input id="classification2" type="checkbox" class="checkbox" value="SVC" name="typeModel" />
-                                  <label for="classification2">SVC</label>
+                                  <input id="classification2" type="checkbox" class="checkbox" value="GradientBoostingClassifier" name="typeModel" />
+                                  <label for="classification2">GradientBoostingClassifier</label>
                                 </div><br>
                                 <div class="checkbox-inline">
-                                  <input id="classification3" type="checkbox" class="checkbox" value="MLPClassifier" name="typeModel" />
-                                  <label for="classification3">MLPClassifier</label>
+                                  <input id="classification3" type="checkbox" class="checkbox" value="BaggingClassifier" name="typeModel" />
+                                  <label for="classification3"><span><span></span></span>BaggingClassifier</label>
                                 </div><br>
                                 <div class="checkbox-inline">
-                                  <input id="classification4" type="checkbox" class="checkbox" value="KNeighborsClassifier" name="typeModel" />
-                                  <label for="classification4">KNeighborsClassifier</label>
+                                  <input id="classification4" type="checkbox" class="checkbox" value="RandomForestClassifier" name="typeModel" />
+                                  <label for="classification4">RandomForestClassifier</label>
                                 </div><br>
                                 <div class="checkbox-inline">
-                                  <input id="classification5" type="checkbox" class="checkbox" value="DecisionTreeClassifier" name="typeModel" />
-                                  <label for="classification5">DecisionTreeClassifier</label>
+                                  <input id="classification5" type="checkbox" class="checkbox" value="ExtraTreesClassifier" name="typeModel" />
+                                  <label for="classification5">ExtraTreesClassifier</label>
+                                </div><br>
+                                <p class="fs-mini text-muted">Non Linear Methods</p>
+                                <div class="checkbox-inline">
+                                  <input id="classification6" type="checkbox" class="checkbox" value="KNeighborsClassifier" name="typeModel" />
+                                  <label for="classification6">KNeighborsClassifier</label>
                                 </div><br>
                                 <div class="checkbox-inline">
-                                  <input id="classification6" type="checkbox" class="checkbox" value="LogisticRegression" name="typeModel" />
-                                  <label for="classification6">LogisticRegression</label>
+                                  <input id="classification7" type="checkbox" class="checkbox" value="DecisionTreeClassifier" name="typeModel" />
+                                  <label for="classification7">DecisionTreeClassifier</label>
                                 </div><br>
                                 <div class="checkbox-inline">
-                                  <input id="classification7" type="checkbox" class="checkbox" value="ExtraTreesClassifier" name="typeModel" />
-                                  <label for="classification7">ExtraTreesClassifier</label>
+                                  <input id="classification8" type="checkbox" class="checkbox" value="MLPClassifier" name="typeModel" />
+                                  <label for="classification8">MLPClassifier</label>
                                 </div><br>
                                 <div class="checkbox-inline">
-                                  <input id="classification8" type="checkbox" class="checkbox" value="AdaBoostClassifier" name="typeModel" />
-                                  <label for="classification8">AdaBoostClassifier</label>
+                                  <input id="classification9" type="checkbox" class="checkbox" value="SVC" name="typeModel" />
+                                  <label for="classification9">SVC</label>
+                                </div><br>
+                                <p class="fs-mini text-muted">Linear Methods</p>
+                                <div class="checkbox-inline">
+                                  <input id="classification10" type="checkbox" class="checkbox" value="LinearDiscriminantAnalysis" name="typeModel" />
+                                  <label for="classification10">LinearDiscriminantAnalysis</label>
                                 </div><br>
                                 <div class="checkbox-inline">
-                                  <input id="classification9" type="checkbox" class="checkbox" value="RandomForestClassifier" name="typeModel" />
-                                  <label for="classification9">RandomForestClassifier</label>
-                                </div><br>
-                                <div class="checkbox-inline">
-                                  <input id="classification10" type="checkbox" class="checkbox" value="GradientBoostingClassifier" name="typeModel" />
-                                  <label for="classification10">GradientBoostingClassifier</label>
+                                  <input id="classification11" type="checkbox" class="checkbox" value="LogisticRegression" name="typeModel" />
+                                  <label for="classification11">LogisticRegression</label>
                                 </div><br>
                               </div>
 
@@ -88,29 +99,31 @@
                                   <input id="typeModel1" type="radio" class="radio" value="Regression" name="typeModelRC" />
                                   <label for="typeModel1"><strong>Regression</strong></label>
                                 </div><br><br>
+                                <p class="fs-mini text-muted">Ensembles Methods</p>
                                 <div class="checkbox-inline">
-                                  <input id="regression1" type="checkbox" class="checkbox" value="KNeighborsRegressor" name="typeModel" />
-                                  <label for="regression1"><span><span></span></span>KNeighborsRegressor</label>
+                                  <input id="regression1" type="checkbox" class="checkbox" value="AdaBoostRegressor" name="typeModel" />
+                                  <label for="regression1"><span><span></span></span>AdaBoostRegressor</label>
                                 </div><br>
                                 <div class="checkbox-inline">
-                                  <input id="regression2" type="checkbox" class="checkbox" value="RandomForestRegressor" name="typeModel" />
-                                  <label for="regression2"><span><span></span></span>RandomForestRegressor</label>
+                                  <input id="regression2" type="checkbox" class="checkbox" value="GradientBoostingRegressor" name="typeModel" />
+                                  <label for="regression2"><span><span></span></span>GradientBoostingRegressor</label>
                                 </div><br>
                                 <div class="checkbox-inline">
-                                  <input id="regression3" type="checkbox" class="checkbox" value="AdaBoostRegressor" name="typeModel" />
-                                  <label for="regression3"><span><span></span></span>AdaBoostRegressor</label>
+                                  <input id="regression3" type="checkbox" class="checkbox" value="BaggingRegressor" name="typeModel" />
+                                  <label for="regression3"><span><span></span></span>BaggingRegressor</label>
                                 </div><br>
                                 <div class="checkbox-inline">
-                                  <input id="regression4" type="checkbox" class="checkbox" value="BaggingRegressor" name="typeModel" />
-                                  <label for="regression4"><span><span></span></span>BaggingRegressor</label>
+                                  <input id="regression4" type="checkbox" class="checkbox" value="RandomForestRegressor" name="typeModel" />
+                                  <label for="regression4"><span><span></span></span>RandomForestRegressor</label>
                                 </div><br>
                                 <div class="checkbox-inline">
                                   <input id="regression5" type="checkbox" class="checkbox" value="ExtraTreesRegressor" name="typeModel" />
                                   <label for="regression5"><span><span></span></span>ExtraTreesRegressor</label>
                                 </div><br>
+                                <p class="fs-mini text-muted">Non Linear Methods</p>
                                 <div class="checkbox-inline">
-                                  <input id="regression6" type="checkbox" class="checkbox" value="GradientBoostingRegressor" name="typeModel" />
-                                  <label for="regression6"><span><span></span></span>GradientBoostingRegressor</label>
+                                  <input id="regression6" type="checkbox" class="checkbox" value="KNeighborsRegressor" name="typeModel" />
+                                  <label for="regression6"><span><span></span></span>KNeighborsRegressor</label>
                                 </div><br>
                                 <div class="checkbox-inline">
                                   <input id="regression7" type="checkbox" class="checkbox" value="DecisionTreeRegressor" name="typeModel" />
@@ -124,13 +137,11 @@
                                   <input id="regression9" type="checkbox" class="checkbox" value="SVR" name="typeModel" />
                                   <label for="regression9"><span><span></span></span>SVR</label>
                                 </div><br>
+                                <p class="fs-mini text-muted">Linear Methods</p>
                               </div>
-
                             </div>
                             <!-- #################################################################### -->
-                            <p class="fs-mini text-muted">
-                                csv files already in the system:
-                            </p>
+                            <p class="fs-mini text-muted">csv files already in the system:</p>
                             {% for file in files %}
                                 {% if file.endswith(".csv") or  file.endswith(".txt")%}
                                     <button class="btn btn-secondary btn-block" value="{{file}}" name="submit" type="submit" >{{ file }}</button>
@@ -173,8 +184,12 @@
                                   <label for="search2"><strong>RandomizedSearchCV</strong></label>
                                 </div>
                                 <div class="radio-inline">
-                                  <input id="search3" type="radio" class="radio" value="Genetic" name="search" />
-                                  <label for="search3"><strong>Genetic</strong></label>
+                                  <input id="search3" type="radio" class="radio" value="GeneticSearchCV" name="search" />
+                                  <label for="search3"><strong>GeneticSearchCV</strong></label>
+                                </div>
+                                <div class="radio-inline">
+                                  <input id="search4" type="radio" class="radio" value="EdasSearch" name="search" />
+                                  <label for="search4"><strong>EdasSearch</strong></label>
                                 </div>
                                 <!-- #################################################################### -->
                                 <div><br> Type of problem: <br></div>
@@ -184,45 +199,52 @@
                                       <input id="typeModel2" type="radio" class="radio" value="Classification" name="typeModelRC" checked/>
                                       <label for="typeModel2"><strong>Classification</strong></label>
                                     </div><br><br>
+                                    <p class="fs-mini text-muted">Ensembles Methods</p>
                                     <div class="checkbox-inline">
-                                      <input id="classification1" type="checkbox" class="checkbox" value="LinearDiscriminantAnalysis" name="typeModel" />
-                                      <label for="classification1">LinearDiscriminantAnalysis</label>
+                                      <input id="classification1" type="checkbox" class="checkbox" value="AdaBoostClassifier" name="typeModel" />
+                                      <label for="classification1">AdaBoostClassifier</label>
                                     </div><br>
                                     <div class="checkbox-inline">
-                                      <input id="classification2" type="checkbox" class="checkbox" value="SVC" name="typeModel" />
-                                      <label for="classification2">SVC</label>
+                                      <input id="classification2" type="checkbox" class="checkbox" value="GradientBoostingClassifier" name="typeModel" />
+                                      <label for="classification2">GradientBoostingClassifier</label>
                                     </div><br>
                                     <div class="checkbox-inline">
-                                      <input id="classification3" type="checkbox" class="checkbox" value="MLPClassifier" name="typeModel" />
-                                      <label for="classification3">MLPClassifier</label>
+                                      <input id="classification3" type="checkbox" class="checkbox" value="BaggingClassifier" name="typeModel" />
+                                      <label for="classification3"><span><span></span></span>BaggingClassifier</label>
                                     </div><br>
                                     <div class="checkbox-inline">
-                                      <input id="classification4" type="checkbox" class="checkbox" value="KNeighborsClassifier" name="typeModel" />
-                                      <label for="classification4">KNeighborsClassifier</label>
+                                      <input id="classification4" type="checkbox" class="checkbox" value="RandomForestClassifier" name="typeModel" />
+                                      <label for="classification4">RandomForestClassifier</label>
                                     </div><br>
                                     <div class="checkbox-inline">
-                                      <input id="classification5" type="checkbox" class="checkbox" value="DecisionTreeClassifier" name="typeModel" />
-                                      <label for="classification5">DecisionTreeClassifier</label>
+                                      <input id="classification5" type="checkbox" class="checkbox" value="ExtraTreesClassifier" name="typeModel" />
+                                      <label for="classification5">ExtraTreesClassifier</label>
+                                    </div><br>
+                                    <p class="fs-mini text-muted">Non Linear Methods</p>
+                                    <div class="checkbox-inline">
+                                      <input id="classification6" type="checkbox" class="checkbox" value="KNeighborsClassifier" name="typeModel" />
+                                      <label for="classification6">KNeighborsClassifier</label>
                                     </div><br>
                                     <div class="checkbox-inline">
-                                      <input id="classification6" type="checkbox" class="checkbox" value="LogisticRegression" name="typeModel" />
-                                      <label for="classification6">LogisticRegression</label>
+                                      <input id="classification7" type="checkbox" class="checkbox" value="DecisionTreeClassifier" name="typeModel" />
+                                      <label for="classification7">DecisionTreeClassifier</label>
                                     </div><br>
                                     <div class="checkbox-inline">
-                                      <input id="classification7" type="checkbox" class="checkbox" value="ExtraTreesClassifier" name="typeModel" />
-                                      <label for="classification7">ExtraTreesClassifier</label>
+                                      <input id="classification8" type="checkbox" class="checkbox" value="MLPClassifier" name="typeModel" />
+                                      <label for="classification8">MLPClassifier</label>
                                     </div><br>
                                     <div class="checkbox-inline">
-                                      <input id="classification8" type="checkbox" class="checkbox" value="AdaBoostClassifier" name="typeModel" />
-                                      <label for="classification8">AdaBoostClassifier</label>
+                                      <input id="classification9" type="checkbox" class="checkbox" value="SVC" name="typeModel" />
+                                      <label for="classification9">SVC</label>
+                                    </div><br>
+                                    <p class="fs-mini text-muted">Linear Methods</p>
+                                    <div class="checkbox-inline">
+                                      <input id="classification10" type="checkbox" class="checkbox" value="LinearDiscriminantAnalysis" name="typeModel" />
+                                      <label for="classification10">LinearDiscriminantAnalysis</label>
                                     </div><br>
                                     <div class="checkbox-inline">
-                                      <input id="classification9" type="checkbox" class="checkbox" value="RandomForestClassifier" name="typeModel" />
-                                      <label for="classification9">RandomForestClassifier</label>
-                                    </div><br>
-                                    <div class="checkbox-inline">
-                                      <input id="classification10" type="checkbox" class="checkbox" value="GradientBoostingClassifier" name="typeModel" />
-                                      <label for="classification10">GradientBoostingClassifier</label>
+                                      <input id="classification11" type="checkbox" class="checkbox" value="LogisticRegression" name="typeModel" />
+                                      <label for="classification11">LogisticRegression</label>
                                     </div><br>
                                   </div>
 
@@ -232,29 +254,31 @@
                                       <input id="typeModel1" type="radio" class="radio" value="Regression" name="typeModelRC" />
                                       <label for="typeModel1"><strong>Regression</strong></label>
                                     </div><br><br>
+                                    <p class="fs-mini text-muted">Ensembles Methods</p>
                                     <div class="checkbox-inline">
-                                      <input id="regression1" type="checkbox" class="checkbox" value="KNeighborsRegressor" name="typeModel" />
-                                      <label for="regression1"><span><span></span></span>KNeighborsRegressor</label>
+                                      <input id="regression1" type="checkbox" class="checkbox" value="AdaBoostRegressor" name="typeModel" />
+                                      <label for="regression1"><span><span></span></span>AdaBoostRegressor</label>
                                     </div><br>
                                     <div class="checkbox-inline">
-                                      <input id="regression2" type="checkbox" class="checkbox" value="RandomForestRegressor" name="typeModel" />
-                                      <label for="regression2"><span><span></span></span>RandomForestRegressor</label>
+                                      <input id="regression2" type="checkbox" class="checkbox" value="GradientBoostingRegressor" name="typeModel" />
+                                      <label for="regression2"><span><span></span></span>GradientBoostingRegressor</label>
                                     </div><br>
                                     <div class="checkbox-inline">
-                                      <input id="regression3" type="checkbox" class="checkbox" value="AdaBoostRegressor" name="typeModel" />
-                                      <label for="regression3"><span><span></span></span>AdaBoostRegressor</label>
+                                      <input id="regression3" type="checkbox" class="checkbox" value="BaggingRegressor" name="typeModel" />
+                                      <label for="regression3"><span><span></span></span>BaggingRegressor</label>
                                     </div><br>
                                     <div class="checkbox-inline">
-                                      <input id="regression4" type="checkbox" class="checkbox" value="BaggingRegressor" name="typeModel" />
-                                      <label for="regression4"><span><span></span></span>BaggingRegressor</label>
+                                      <input id="regression4" type="checkbox" class="checkbox" value="RandomForestRegressor" name="typeModel" />
+                                      <label for="regression4"><span><span></span></span>RandomForestRegressor</label>
                                     </div><br>
                                     <div class="checkbox-inline">
                                       <input id="regression5" type="checkbox" class="checkbox" value="ExtraTreesRegressor" name="typeModel" />
                                       <label for="regression5"><span><span></span></span>ExtraTreesRegressor</label>
                                     </div><br>
+                                    <p class="fs-mini text-muted">Non Linear Methods</p>
                                     <div class="checkbox-inline">
-                                      <input id="regression6" type="checkbox" class="checkbox" value="GradientBoostingRegressor" name="typeModel" />
-                                      <label for="regression6"><span><span></span></span>GradientBoostingRegressor</label>
+                                      <input id="regression6" type="checkbox" class="checkbox" value="KNeighborsRegressor" name="typeModel" />
+                                      <label for="regression6"><span><span></span></span>KNeighborsRegressor</label>
                                     </div><br>
                                     <div class="checkbox-inline">
                                       <input id="regression7" type="checkbox" class="checkbox" value="DecisionTreeRegressor" name="typeModel" />
@@ -269,7 +293,6 @@
                                       <label for="regression9"><span><span></span></span>SVR</label>
                                     </div><br>
                                   </div>
-
                                 </div>
                                 <!-- #################################################################### -->
                                 <p class="fs-mini text-muted">

@@ -46,12 +46,12 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
 from sklearn.neural_network import MLPClassifier
 #Ensembles algorithms
-from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.ensemble import AdaBoostClassifier
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import VotingClassifier
-from sklearn.ensemble import BaggingRegressor
+from sklearn.ensemble import BaggingClassifier
 
 # Algorithms Regression
 from sklearn.svm import SVR
@@ -59,11 +59,11 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.tree import DecisionTreeRegressor
 #Ensembles algorithms
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.ensemble import AdaBoostRegressor
-from sklearn.ensemble import BaggingRegressor
-from sklearn.ensemble import ExtraTreesRegressor
 from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.ensemble import BaggingRegressor
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import ExtraTreesRegressor
 
 class Evaluate():
     """ A class for resampling and evaluation """
@@ -89,11 +89,11 @@ class Evaluate():
         self.scoring = 'accuracy'
 
     def pipeline(self):
-        modelos = ['LinearDiscriminantAnalysis', 'SVC', 'GaussianNB', 'MLPClassifier', 'KNeighborsClassifier'
-                   'DecisionTreeClassifier', 'LogisticRegression', 'ExtraTreesClassifier', 'AdaBoostClassifier',
-                   'RandomForestClassifier', 'GradientBoostingClassifier', 'VotingClassifier', 'KNeighborsRegressor',
-                   'RandomForestRegressor', 'AdaBoostRegressor', 'BaggingRegressor', 'ExtraTreesRegressor',
-                   'GradientBoostingRegressor', 'DecisionTreeRegressor', 'MLPRegressor', 'SVR']
+        modelos = ['AdaBoostClassifier', 'GradientBoostingClassifier', 'BaggingClassifier', 'RandomForestClassifier',
+                   'KNeighborsClassifier', 'DecisionTreeClassifier', 'MLPClassifier', 'ExtraTreesClassifier', 'SVC',
+                   'LinearDiscriminantAnalysis', 'GaussianNB', 'LogisticRegression', 'VotingClassifier',
+                   'AdaBoostRegressor', 'GradientBoostingRegressor', 'BaggingRegressor', 'RandomForestRegressor',
+                   'KNeighborsRegressor', 'DecisionTreeRegressor', 'MLPRegressor', 'ExtraTreesRegressor', 'SVR']
         self.build_pipelines(modelos)
         self.split_data(self.test_size, self.seed)
         self.evaluate_pipelines()
@@ -105,59 +105,60 @@ class Evaluate():
         rs = 1
         models = []
         if (self.problem_type == "Classification"):
-            # LDA : Warning(Variables are collinear)
-            if 'LinearDiscriminantAnalysis' in modelos:
-                models.append( ('LinearDiscriminantAnalysis', LinearDiscriminantAnalysis()) )
-            if 'SVC' in modelos:
-                models.append( ('SVC', SVC(random_state=rs)) )
-            if 'GaussianNB' in modelos:
-                models.append( ('GaussianNB', GaussianNB()) )
-            if 'MLPClassifier' in modelos:
-                models.append( ('MLPClassifier', MLPClassifier(max_iter=1000,random_state=rs)) )
+            # Ensemble Methods
+            if 'AdaBoostClassifier' in modelos:
+                models.append( ('AdaBoostClassifier', AdaBoostClassifier(random_state=rs)) )
+            if 'GradientBoostingClassifier' in modelos:
+                models.append( ('GradientBoostingClassifier', GradientBoostingClassifier(random_state=rs)) )
+            if 'BaggingClassifier' in modelos:
+                models.append( ('BaggingClassifier', BaggingClassifier(random_state=rs)))
+            if 'RandomForestClassifier' in modelos:
+                models.append( ('RandomForestClassifier', RandomForestClassifier(random_state=rs)) )
+            if 'ExtraTreesClassifier' in modelos:
+                models.append( ('ExtraTreesClassifier', ExtraTreesClassifier(random_state=rs)) )
+            # Non linear Methods
             if 'KNeighborsClassifier' in modelos:
                 models.append( ('KNeighborsClassifier', KNeighborsClassifier()) )
             if 'DecisionTreeClassifier' in modelos:
                 models.append( ('DecisionTreeClassifier', DecisionTreeClassifier(random_state=rs)) )
+            if 'MLPClassifier' in modelos:
+                models.append( ('MLPClassifier', MLPClassifier(max_iter=1000,random_state=rs)) )
+            if 'SVC' in modelos:
+                models.append( ('SVC', SVC(random_state=rs)) )
+            # Linear Methods
+            if 'LinearDiscriminantAnalysis' in modelos:
+                models.append( ('LinearDiscriminantAnalysis', LinearDiscriminantAnalysis()) )
+            if 'GaussianNB' in modelos:
+                models.append( ('GaussianNB', GaussianNB()) )
             if 'LogisticRegression' in modelos:
                 models.append( ('LogisticRegression', LogisticRegression()) )
-            # Bagging and Boosting
-            if 'ExtraTreesClassifier' in modelos:
-                models.append( ('ExtraTreesClassifier', ExtraTreesClassifier(random_state=rs)) )
-            if 'AdaBoostClassifier' in modelos:
-                models.append( ('AdaBoostClassifier', AdaBoostClassifier(DecisionTreeClassifier(random_state=rs),random_state=rs)) )
-            if 'RandomForestClassifier' in modelos:
-                models.append( ('RandomForestClassifier', RandomForestClassifier(random_state=rs)) )
-            if 'GradientBoostingClassifier' in modelos:
-                models.append( ('GradientBoostingClassifier', GradientBoostingClassifier(random_state=rs)) )
             # Voting
-            estimators = []
-            estimators.append( ("Voting_GradientBoostingClassifier", GradientBoostingClassifier(random_state=rs)) )
-            estimators.append( ("Voting_ExtraTreesClassifier", ExtraTreesClassifier(random_state=rs)) )
-            voting = VotingClassifier(estimators)
-            if 'VotingClassifier'  in modelos:
-                models.append( ('VotingClassifier', voting) )
+            #estimators = []
+            #estimators.append( ("Voting_GradientBoostingClassifier", GradientBoostingClassifier(random_state=rs)) )
+            #estimators.append( ("Voting_ExtraTreesClassifier", ExtraTreesClassifier(random_state=rs)) )
+            #voting = VotingClassifier(estimators)
+            #if 'VotingClassifier'  in modelos:
+            #    models.append( ('VotingClassifier', voting) )
 
         elif (self.problem_type == "Regression"):
-            if 'KNeighborsRegressor' in modelos:
-                models.append( ('KNeighborsRegressor', KNeighborsRegressor()) )
-            # sklearn.ensemble: Ensemble Methods
-            if 'RandomForestRegressor' in modelos:
-                models.append( ('RandomForestRegressor',RandomForestRegressor(random_state=rs))  )
+            # Ensemble Methods
             if 'AdaBoostRegressor' in modelos:
                 models.append( ('AdaBoostRegressor', AdaBoostRegressor(random_state=rs)))
-            if 'BaggingRegressor' in modelos:
-                models.append( ('BaggingRegressor', BaggingRegressor(random_state=rs)))
-            if 'ExtraTreesRegressor' in modelos:
-                models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
             if 'GradientBoostingRegressor' in modelos:
                 models.append( ('GradientBoostingRegressor', GradientBoostingRegressor(random_state=rs)) )
-            #sklearn.tree: Decision Trees
+            if 'BaggingRegressor' in modelos:
+                models.append( ('BaggingRegressor', BaggingRegressor(random_state=rs)))
+            if 'RandomForestRegressor' in modelos:
+                models.append( ('RandomForestRegressor',RandomForestRegressor(random_state=rs))  )
+            if 'ExtraTreesRegressor' in modelos:
+                models.append( ('ExtraTreesRegressor', ExtraTreesRegressor(random_state=rs)) )
+            # Non linear Methods
+            if 'KNeighborsRegressor' in modelos:
+                models.append( ('KNeighborsRegressor', KNeighborsRegressor()) )
             if 'DecisionTreeRegressor' in modelos:
                 models.append( ('DecisionTreeRegressor', DecisionTreeRegressor(random_state=rs)) )
-            #sklearn.neural_network: Neural network models
             if 'MLPRegressor' in modelos:
                 models.append( ('MLPRegressor', MLPRegressor(max_iter=1000, random_state=rs)) )
-            # sklearn.svm: Support Vector Machines
             if 'SVR' in modelos:
                 models.append( ('SVR', SVR()) )
         return models
@@ -255,7 +256,6 @@ class Evaluate():
     def plot_models(self):
         """" Plot the algorithms by using box plots"""
         results = self.raw_report
-        print(type(self.raw_report))
         data = []
         N = len(results)
         c = ['hsl('+str(h)+',50%'+',50%)' for h in np.linspace(0, 270, N)]
@@ -279,34 +279,53 @@ class Evaluate():
                 text=['Explanation' for _ in results]
         )
         data.append(text_scatter)
-        layout = go.Layout(
-            #showlegend=False,
-            title='Hover over the bars to see the details',
-            annotations=[
-                dict(
-                    x=results[0]['name'],
-                    y=results[0]['mean'],
-                    xref='x',
-                    yref='y',
-                    text='Best model',
-                    showarrow=True,
-                    arrowhead=7,
-                    ax=0,
-                    ay=-40
-                ),
-                dict(
-                    x=results[-1]['name'],
-                    y=results[-1]['mean'],
-                    xref='x',
-                    yref='y',
-                    text='Worst model',
-                    showarrow=True,
-                    arrowhead=7,
-                    ax=0,
-                    ay=-40
-                )
-            ]
-        )
+        if len(self.raw_report) == 1:
+            layout = go.Layout(
+                #showlegend=False,
+                title='Hover over the bars to see the details',
+                annotations=[
+                    dict(
+                        x=results[0]['name'],
+                        y=results[0]['mean'],
+                        xref='x',
+                        yref='y',
+                        text='Best model',
+                        showarrow=True,
+                        arrowhead=7,
+                        ax=0,
+                        ay=-40
+                    )
+                ]
+            )
+        else:
+            layout = go.Layout(
+                #showlegend=False,
+                title='Hover over the bars to see the details',
+                annotations=[
+                    dict(
+                        x=results[0]['name'],
+                        y=results[0]['mean'],
+                        xref='x',
+                        yref='y',
+                        text='Best model',
+                        showarrow=True,
+                        arrowhead=7,
+                        ax=0,
+                        ay=-40
+                    ),
+                    dict(
+                        x=results[-1]['name'],
+                        y=results[-1]['mean'],
+                        xref='x',
+                        yref='y',
+                        text='Worst model',
+                        showarrow=True,
+                        arrowhead=7,
+                        ax=0,
+                        ay=-40
+                    )
+                ]
+            )
 
         fig = go.Figure(data=data, layout=layout)
 
