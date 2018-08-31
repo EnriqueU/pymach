@@ -12,6 +12,7 @@ import tools
 import matplotlib.pyplot as plt
 import plotly.graph_objs as go
 import multiprocessing as mp
+import multiprocessing
 import seaborn as sns
 import pandas as pd
 import numpy as np
@@ -28,8 +29,22 @@ from time import time
 # from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+from sklearn.model_selection import KFold
 from searchers import GeneticSearchCV, EdasSearch
+from methods import getModelAccuracy
 
+class NoDaemonProcess(multiprocessing.Process):
+    # make 'daemon' attribute always return False
+    def _get_daemon(self):
+        return False
+    def _set_daemon(self, value):
+        pass
+    daemon = property(_get_daemon, _set_daemon)
+
+# We sub-class multiprocessing.pool.Pool instead of multiprocessing.Pool
+# because the latter is only a wrapper function, not a proper class.
+class MyPool(multiprocessing.pool.Pool):
+    Process = NoDaemonProcess
 
 class Improve():
     """ A class for improving """
@@ -53,7 +68,7 @@ class Improve():
 
     ############################# Classification ###################################
     def adaboost_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
@@ -70,18 +85,12 @@ class Improve():
                 'AdaBoostClassifier__learning_rate': expon(0,1),
                 'AdaBoostClassifier__algorithm' : ['SAMME', 'SAMME.R']
             }
-        elif  method == 'GeneticSearchCV':
-            parameters = {
-                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
-                'selector__pca__whiten': [True,False],
-                'AdaBoostClassifier__n_estimators': [50,75,100],
-                'AdaBoostClassifier__learning_rate': [0.5,1.0,1.5],
-                'AdaBoostClassifier__algorithm' : ['SAMME', 'SAMME.R']
-            }
+        else:
+            pass
         return parameters
 
     def gradientboosting_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -97,12 +106,12 @@ class Improve():
             'GradientBoostingClassifier__max_depth': randint(3,9),
             'GradientBoostingClassifier__learning_rate': expon(0,1)
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def bagging_paramC(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -116,12 +125,12 @@ class Improve():
             'BaggingClassifier__n_estimators': randint(50,100),
             'BaggingClassifier__warm_start': [True,False]
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def randomforest_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -137,12 +146,12 @@ class Improve():
             'RandomForestClassifier__criterion': ['gini', 'entropy'],
             'RandomForestClassifier__warm_start': [True,False]
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def extratrees_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -158,12 +167,12 @@ class Improve():
             'ExtraTreesClassifier__criterion': ['gini', 'entropy'],
             'ExtraTreesClassifier__warm_start': [True, False]
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def knn_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -179,19 +188,18 @@ class Improve():
             'KNeighborsClassifier__weights': ['uniform','distance'],
             'KNeighborsClassifier__algorithm': ['ball_tree','kd_tree','brute']
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def decisiontree_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
                 'DecisionTreeClassifier__criterion': ['gini','entropy'],
                 'DecisionTreeClassifier__splitter': ['best','random'],
                 'DecisionTreeClassifier__max_features': ['sqrt','log2', None]
-
             }
         elif  method == 'RandomizedSearchCV':
             parameters = {
@@ -201,12 +209,12 @@ class Improve():
                 'DecisionTreeClassifier__splitter': ['best','random'],
                 'DecisionTreeClassifier__max_features': ['sqrt','log2', None]
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def mlperceptron_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -220,12 +228,12 @@ class Improve():
             'MLPClassifier__hidden_layer_sizes': randint(50,100),
             'MLPClassifier__activation': ['identity', 'logistic', 'tanh', 'relu']
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def svc_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -241,20 +249,24 @@ class Improve():
             'SVC__C': randint(1,100),
             'SVC__decision_function_shape': ['ovo','ovr']
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def lda_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
                 'LinearDiscriminantAnalysis__solver': ['svd']
             }
         elif  method == 'RandomizedSearchCV':
-            pass
-        elif  method == 'GeneticSearchCV':
+            parameters = {
+                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+                'selector__pca__whiten': [True,False],
+                'LinearDiscriminantAnalysis__solver': ['svd']
+            }
+        else:
             pass
         return parameters
 
@@ -278,7 +290,7 @@ class Improve():
     '''
 
     def logistic_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
@@ -288,28 +300,39 @@ class Improve():
                 'LogisticRegression__warm_start': [True,False]
             }
         elif  method == 'RandomizedSearchCV':
-            pass
-        elif  method == 'GeneticSearchCV':
+            parameters = {
+                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+                'selector__pca__whiten': [True,False],
+                'LogisticRegression__penalty': ['l2'],
+                # 'LogisticRegression__solver': ['newton-cg','lbfgs','liblinear','sag'],
+                'LogisticRegression__solver': ['newton-cg','lbfgs', 'sag'],
+                'LogisticRegression__warm_start': [True,False]
+            }
+        else:
             pass
         return parameters
 
     def naivebayes_paramC(self, method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False]
                 # 'GaussianNB__priors': [None]
             }
         elif  method == 'RandomizedSearchCV':
-            pass
-        elif  method == 'GeneticSearchCV':
+            parameters = {
+                'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+                'selector__pca__whiten': [True,False]
+                # 'GaussianNB__priors': [None]
+            }
+        else:
             pass
         return parameters
 
 
     ############################# Regression ###################################
     def adaboost_paramR(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -325,12 +348,12 @@ class Improve():
             'AdaBoostRegressor__learning_rate': expon(0,5),
             'AdaBoostRegressor__loss' : ['linear', 'square', 'exponential']
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
-            return parameters
+        return parameters
 
     def gradientboosting_paramR(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -348,12 +371,12 @@ class Improve():
             'GradientBoostingRegressor__max_depth': randint(3,9),
             'GradientBoostingRegressor__learning_rate': expon(0,1)
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
-            return parameters
+        return parameters
 
     def bagging_paramR(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -367,12 +390,12 @@ class Improve():
             'BaggingRegressor__n_estimators': randint(50,100),
             'BaggingRegressor__warm_start': [True,False]
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def randomforest_paramR(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -388,12 +411,12 @@ class Improve():
             'RandomForestRegressor__criterion': ['mse', 'mae'],
             'RandomForestRegressor__warm_start': [True,False]
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def extratrees_paramR(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -409,12 +432,12 @@ class Improve():
             'ExtraTreesRegressor__criterion': ['mse', 'mae'],
             'ExtraTreesRegressor__warm_start': [True, False]
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def knn_paramR(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
@@ -430,12 +453,12 @@ class Improve():
                 'KNeighborsRegressor__weights': ['uniform','distance'],
                 'KNeighborsRegressor__algorithm': ['ball_tree','kd_tree','brute']
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def decisiontree_paramR(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
@@ -451,12 +474,12 @@ class Improve():
                 'DecisionTreeRegressor__splitter': ['best','random'],
                 'DecisionTreeRegressor__max_features': ['sqrt','log2', None]
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def mlperceptron_paramR(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
             'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
             'selector__pca__whiten': [True,False],
@@ -470,12 +493,12 @@ class Improve():
             'MLPRegressor__hidden_layer_sizes': randint(50,100),
             'MLPRegressor__activation': ['identity', 'logistic', 'tanh', 'relu']
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
     def svc_paramR(self,method='GridSearchCV'):
-        if method == 'GridSearchCV':
+        if method == 'GridSearchCV' or method == 'GeneticSearchCV' or method == 'EdasSearch':
             parameters = {
                 'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
                 'selector__pca__whiten': [True,False],
@@ -489,7 +512,7 @@ class Improve():
                 'SVR__kernel': ['linear','poly', 'rbf','sigmoid'],
                 'SVR__C': randint(1,100)
             }
-        elif  method == 'GeneticSearchCV':
+        else:
             pass
         return parameters
 
@@ -559,24 +582,33 @@ class Improve():
             random_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
             return [random_search_t.best_score_,random_search_t.best_params_]
         elif self.optimizer == 'GeneticSearchCV':
-            genetic_search_t = GeneticSearchCV(m, parameters, verbose=1)
+            genetic_search_t = GeneticSearchCV(m, parameters, scoring=None, cv=KFold(n_splits=5), n_jobs=1, verbose=1, refit=False, population_size=50, gene_mutation_prob=0.10, gene_crossover_prob=0.5, tournament_size=3, generations_number=10)
             print("Performing GeneticSearchCV...", n)
             genetic_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
             return [genetic_search_t.best_score_,genetic_search_t.best_params_]
         elif self.optimizer == 'EdasSearch':
-            eda_search_t = EdasHyperparameterSearch(getModelAccuracy, parametros, estimador,iterations=2, sample_size=15, select_ratio=0.3, debug=False)
+            eda_search_t = EdasSearch(getModelAccuracy, parameters, m,iterations=2, sample_size=15, select_ratio=0.3, debug=False)
+            eda_search_t.run()
             print("Performing EdasSearch...", n)
+            random_search_t = RandomizedSearchCV(m, parameters, verbose=1)
+            random_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
+            return [random_search_t.best_score_,random_search_t.best_params_]
 
     def improve_grid_search(self):
         self.evaluator.split_data()
         self.report = [["Model", "Best_score", "Parameters"]]
         results = []
+        if self.optimizer == 'GridSearchCV' or self.optimizer == 'RandomizedSearchCV':
+            num_cores=mp.cpu_count()
+            print("****************** num_cores: ",num_cores," *********************")
+            pool = mp.Pool(processes=num_cores)
+            r = pool.map(self.evaluate_model,self.pipelines)
+        else:
+            pool = MyPool(5)
+            r = pool.map(self.evaluate_model,self.pipelines)
 
-        num_cores=mp.cpu_count()
-        print("****************** num_cores: ",num_cores," *********************")
-        pool = mp.Pool(processes=num_cores)
-        r = pool.map(self.evaluate_model,self.pipelines)
         pool.close()
+        #pool.join()
         i=0
 
         for cv_results in r:

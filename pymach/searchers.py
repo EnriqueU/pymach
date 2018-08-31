@@ -1,12 +1,13 @@
 from deap import base, creator, tools, algorithms
 from sklearn.base import clone
 from sklearn.base import is_classifier
+from sklearn.model_selection._validation import _fit_and_score
 from sklearn.model_selection._search import _check_param_grid
 from sklearn.model_selection._search import check_cv
 from sklearn.metrics.scorer import check_scoring
 from sklearn.utils.validation import _num_samples
 
-
+import random as rnd
 import numpy as np
 import pandas as pd
 import itertools as it
@@ -159,7 +160,7 @@ class GeneticSearchCV:
 		creator.create("FitnessMax", base.Fitness, weights=(1.0,))
 		# Individuo [list], parámetros:est, FinessMax
 		creator.create("Individual", list, est=clone(self.estimator), fitness=creator.FitnessMax)
-	@property
+
 	def cv_results_(self):
 		if self._cv_results is None:
 			out = defaultdict(list)
@@ -181,7 +182,7 @@ class GeneticSearchCV:
 			out['nan_test_score?'] += [np.any(np.isnan(scores)) for scores in each_scores]
 			self._cv_results = out
 		return self._cv_results
-	@property
+
 	def best_index_(self):
 		return np.argmax(self.cv_results_['max_test_score'])
 	# fit y refit general
@@ -198,12 +199,13 @@ class GeneticSearchCV:
 				self.best_estimator_.fit(X, y, **self.fit_params)
 			else:
 				self.best_estimator_.fit(X, y)
+		return self
 	# fit individual
 	def _fit(self, X, y, parameter_dict):
 		self._cv_results = None  # Indicador de necesidad de actualización
 		self.scorer_ = check_scoring(self.estimator, scoring=self.scoring)
 		n_samples = _num_samples(X)
-		# verificar longitudes x,y 
+		# verificar longitudes x,y
 		if _num_samples(y) != n_samples:
 			raise ValueError('Target [y], data [X] no coinciden')
 		self.cv = check_cv(self.cv, y=y, classifier=is_classifier(self.estimator))
@@ -272,103 +274,102 @@ class GeneticSearchCV:
 			self.best_mem_params_ = current_best_params_
 		# fin paralelización, close pool
 		pool.close()
-		pool.join()
+		#pool.join()
 		self.best_score_ = current_best_score_
 		self.best_params_ = current_best_params_
 
 # -----------------------------------------------------------------------------------------------
 class EdasSearch:
-    def __init__(self, of, parametros, estimator, iterations=10, sample_size=50, select_ratio=0.3, debug=False):
-        # Algorithm parameters
-        self.iterations = iterations
-        self.sample_size = sample_size
-        self.select_ratio = select_ratio
-        self.epsilon = 10e-6
-        # class members
-        self.objective_function = of
-        self.sample = []
-        self.means = []
-        self.stdevs = []
-        self.debug = debug
-        # aditional parameters
-        self.parametros = parametros
-        self.estimator = estimator
-        self.__manager = Manager()
-        self.score_cache = self.__manager.dict()
-        self.resultados = self.__manager.list()
-        self.n_jobs = cpu_count()
-        self.dimensions = len(parametros)
+	def __init__(self, of, parametros, estimator, iterations=10, sample_size=50, select_ratio=0.3, debug=False):
+		# Algorithm parameters
+		self.iterations = iterations
+		self.sample_size = sample_size
+		self.select_ratio = select_ratio
+		self.epsilon = 10e-6
+		# class members
+		self.objective_function = of
+		self.sample = []
+		self.means = []
+		self.stdevs = []
+		self.debug = debug
+		# aditional parameters
+		self.parametros = parametros
+		self.estimator = estimator
+		self.__manager = Manager()
+		self.score_cache = self.__manager.dict()
+		self.resultados = self.__manager.list()
+		self.n_jobs = cpu_count()
+		self.dimensions = len(parametros)
 
-    def sample_sort(self):
-        self.sample = self.sample[np.argsort(self.sample[:, -1], 0)]
+	def sample_sort(self):
+		self.sample = self.sample[np.argsort(self.sample[:, -1], 0)]
 
-    def dispersion_reduction(self):
-        self.sample_sort()
-        nb = int(np.floor(self.sample_size * self.select_ratio))
-        self.sample = self.sample[self.sample_size - nb:]
-        if self.debug:
-            print("dispersion reduction")
-            print(str(self.sample))
-            print
+	def dispersion_reduction(self):
+		self.sample_sort()
+		nb = int(np.floor(self.sample_size * self.select_ratio))
+		self.sample = self.sample[self.sample_size - nb:]
+		if self.debug:
+			print("dispersion reduction")
+			print(str(self.sample))
+			print
 
-    def estimate_parameters(self):
-        mat = self.sample  # self.sample[:, :self.dimensions]
-        self.means = np.mean(mat, 0)
-        self.stdevs = np.std(mat, 0)
-        if self.debug:
-            print("estimate parameters")
-            print("\tmean=" + str(self.means))
-            print("\tstd-dev=" + str(self.stdevs))
-            print
+	def estimate_parameters(self):
+		mat = self.sample  # self.sample[:, :self.dimensions]
+		self.means = np.mean(mat, 0)
+		self.stdevs = np.std(mat, 0)
+		if self.debug:
+			print("estimate parameters")
+			print("\tmean=" + str(self.means))
+			print("\tstd-dev=" + str(self.stdevs))
+			print
 
-    def draw_sample(self):
-        # for each variable to optimize
-        self.stdevs = ((self.stdevs == 0) * self.epsilon) + self.stdevs
-        self.sample = np.floor(np.random.normal(
-            self.means, self.stdevs, size=(self.sample_size, self.dimensions + 1)))
-        var = (np.max(self.sample, 0) - np.min(self.sample, 0))
-        var = var + (var == 0) * self.epsilon
-        self.sample = np.floor(
-            ((self.sample - np.min(self.sample, 0)) / var) * (self.tope_params - 1))
-        if self.debug:
-            print("draw sample")
-            print(self.sample)
-            print
+	def draw_sample(self):
+		# for each variable to optimize
+		self.stdevs = ((self.stdevs == 0) * self.epsilon) + self.stdevs
+		self.sample = np.floor(np.random.normal(self.means, self.stdevs, size=(self.sample_size, self.dimensions + 1)))
+		var = (np.max(self.sample, 0) - np.min(self.sample, 0))
+		var = var + (var == 0) * self.epsilon
+		self.sample = np.floor(((self.sample - np.min(self.sample, 0)) / var) * (self.tope_params - 1))
+		if self.debug:
+			print("draw sample")
+			print(self.sample)
+			print
 
-    def evaluate(self):
-        _pool = Pool(self.n_jobs)
-        # iterador de parametros de función objetivo multiproceso
-        _iterable = it.product([self.parametros], np.int32(self.sample[:, :self.dimensions]),
+	def evaluate(self):
+		_pool = Pool(self.n_jobs)
+		# iterador de parametros de función objetivo multiproceso
+		_iterable = it.product([self.parametros], np.int32(self.sample[:, :self.dimensions]),
                                [self.estimator], [self.score_cache], [self.resultados])
-        self.sample[:, -1] = _pool.starmap(self.objective_function, _iterable)
-        _pool.close()
-        _pool.join()
-        if self.debug:
-            print("evaluate")
-            print(self.sample)
-            print
+		print(_iterable)
+		self.sample[:, -1] = _pool.starmap(self.objective_function, _iterable)
+		_pool.close()
+		_pool.join()
+		if self.debug:
+			print("evaluate")
+			print(self.sample)
+			print("\n")
 
-    def run(self):
-        self.sample = np.random.rand(self.sample_size, self.dimensions + 1) # uniform initialization
-        # cosmetic
-        self.params_size = [len(self.parametros[key]) -
+	def run(self):
+		self.sample = np.random.rand(self.sample_size, self.dimensions + 1) # uniform initialization
+		# cosmetic
+		self.params_size = [len(self.parametros[key]) -
                             1 for key in self.parametros.keys()]  # maxints
-        self.tope_params = np.array(self.params_size + [-1]) + 1
-        self.sample = np.floor(self.sample * self.tope_params)
-        if self.debug:
-            print("initialization")
-            print(self.sample)
-            print
-        i = 0
-        self.evaluate()  # Multi process
-        self.sample_sort()
-        while i < self.iterations:
-            if self.debug:
-                print("iteration", i)
-                print
-            i += 1
-            self.dispersion_reduction()
-            self.estimate_parameters()
-            self.draw_sample()
-            self.evaluate()
-            self.sample_sort()
+		self.tope_params = np.array(self.params_size + [-1]) + 1
+		self.sample = np.floor(self.sample * self.tope_params)
+		if self.debug:
+			print("initialization")
+			print(self.sample)
+			print
+		i = 0
+		self.evaluate()  # Multi process
+		self.sample_sort()
+		while i < self.iterations:
+			if self.debug:
+				print("iteration", i)
+				print
+			i += 1
+			self.dispersion_reduction()
+			self.estimate_parameters()
+			self.draw_sample()
+			self.evaluate()
+			self.sample_sort()
