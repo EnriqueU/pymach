@@ -39,6 +39,8 @@ from sklearn.preprocessing import FunctionTransformer
 
 #Algorithms Classifier
 from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import BayesianRidge
+from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
@@ -93,7 +95,8 @@ class Evaluate():
                    'KNeighborsClassifier', 'DecisionTreeClassifier', 'MLPClassifier', 'ExtraTreesClassifier', 'SVC',
                    'LinearDiscriminantAnalysis', 'GaussianNB', 'LogisticRegression', 'VotingClassifier',
                    'AdaBoostRegressor', 'GradientBoostingRegressor', 'BaggingRegressor', 'RandomForestRegressor',
-                   'KNeighborsRegressor', 'DecisionTreeRegressor', 'MLPRegressor', 'ExtraTreesRegressor', 'SVR']
+                   'KNeighborsRegressor', 'DecisionTreeRegressor', 'MLPRegressor', 'ExtraTreesRegressor', 'SVR',
+                   'LinearRegression', 'BayesianRidge']
         self.build_pipelines(modelos)
         self.split_data(self.test_size, self.seed)
         self.evaluate_pipelines()
@@ -161,6 +164,11 @@ class Evaluate():
                 models.append( ('MLPRegressor', MLPRegressor(max_iter=1000, random_state=rs)) )
             if 'SVR' in modelos:
                 models.append( ('SVR', SVR()) )
+            # Linear Methods
+            if 'LinearRegression' in modelos:
+                models.append( ('LinearRegression', LinearRegression()) )
+            if 'BayesianRidge' in modelos:
+                models.append( ('BayesianRidge', LinearRegression()) )
         return models
 
     def build_pipelines(self, modelos=None):

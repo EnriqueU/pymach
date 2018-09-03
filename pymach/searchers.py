@@ -1,17 +1,19 @@
-from deap import base, creator, tools, algorithms
-from sklearn.base import clone
-from sklearn.base import is_classifier
 from sklearn.model_selection._validation import _fit_and_score
 from sklearn.model_selection._search import _check_param_grid
 from sklearn.model_selection._search import check_cv
-from sklearn.metrics.scorer import check_scoring
 from sklearn.utils.validation import _num_samples
+from deap import base, creator, tools, algorithms
+from sklearn.metrics.scorer import check_scoring
+from sklearn.base import is_classifier
+from sklearn.base import clone
 
-import random as rnd
-import numpy as np
-import pandas as pd
-import itertools as it
 from multiprocessing import Pool, Manager, cpu_count
+from collections import defaultdict
+from methods import prettyPrint
+import itertools as it
+import random as rnd
+import pandas as pd
+import numpy as np
 
 
 def _get_param_types_maxint(params):
@@ -199,6 +201,7 @@ class GeneticSearchCV:
 				self.best_estimator_.fit(X, y, **self.fit_params)
 			else:
 				self.best_estimator_.fit(X, y)
+		#print(self.cv_results_())
 		return self
 	# fit individual
 	def _fit(self, X, y, parameter_dict):
@@ -280,7 +283,7 @@ class GeneticSearchCV:
 
 # -----------------------------------------------------------------------------------------------
 class EdasSearch:
-	def __init__(self, of, parametros, estimator, iterations=10, sample_size=50, select_ratio=0.3, debug=False):
+	def __init__(self, of, parametros, estimator, iterations=10, sample_size=50, select_ratio=0.3, debug=False, n_jobs=1):
 		# Algorithm parameters
 		self.iterations = iterations
 		self.sample_size = sample_size
@@ -298,8 +301,11 @@ class EdasSearch:
 		self.__manager = Manager()
 		self.score_cache = self.__manager.dict()
 		self.resultados = self.__manager.list()
-		self.n_jobs = cpu_count()
+		self.n_jobs = n_jobs
+		#self.n_jobs = cpu_count()
 		self.dimensions = len(parametros)
+		self.best_score_ = None
+		self.best_params_ = None
 
 	def sample_sort(self):
 		self.sample = self.sample[np.argsort(self.sample[:, -1], 0)]
@@ -349,7 +355,7 @@ class EdasSearch:
 			print(self.sample)
 			print("\n")
 
-	def run(self):
+	def fit(self):
 		self.sample = np.random.rand(self.sample_size, self.dimensions + 1) # uniform initialization
 		# cosmetic
 		self.params_size = [len(self.parametros[key]) -
@@ -373,3 +379,7 @@ class EdasSearch:
 			self.draw_sample()
 			self.evaluate()
 			self.sample_sort()
+		#print(self.resultados)
+		results = pd.DataFrame(list(self.resultados)).sort_values(['Accuracy'], ascending=False).reset_index(drop=True)
+		self.best_score_ = results.iloc[0]['accuracy_values'].max()
+		self.best_params_ = results.iloc[0]['Parametros']

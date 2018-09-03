@@ -38,7 +38,7 @@ class Select():
     def pipeline(self):
         """ This function chooses the best way to find features"""
         transformers = []
-        if( self.n_features >3 ):
+        if( self.n_features >5 ):
             n_features = math.ceil(self.n_features/2)
             pca = PCA(n_components=n_features, svd_solver='randomized', whiten=True)
             transformers.append(('pca', pca))
@@ -49,7 +49,7 @@ class Select():
                 kbest = SelectKBest(score_func=f_regression, k=n_features)
                 transformers.append(('kbest', kbest))"""
         else:
-            pca = PCA(n_components=self.n_features, svd_solver='randomized', whiten=True)
+            pca = PCA(n_components=self.n_features-1, svd_solver='randomized', whiten=True)
             transformers.append(('pca', pca))
         return FeatureUnion(transformers)
 

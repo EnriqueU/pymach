@@ -342,7 +342,7 @@ class Improve():
             }
         elif  method == 'RandomizedSearchCV':
             parameters = {
-            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],
+            'selector__pca__svd_solver': ['full', 'arpack', 'randomized'],# n_components=3 must be stricly less than n_features=3 with svd_solver='arpack'
             'selector__pca__whiten': [True,False],
             'AdaBoostRegressor__n_estimators': randint(50,100),
             'AdaBoostRegressor__learning_rate': expon(0,5),
@@ -572,27 +572,25 @@ class Improve():
         n,m = pipelines
         parameters = self.get_params(n, self.optimizer)
         if self.optimizer == 'GridSearchCV':
-            grid_search_t = GridSearchCV(m, parameters, verbose=1)
             print("Performing GridSearchCV...", n)
+            grid_search_t = GridSearchCV(m, parameters, verbose=1)
             grid_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
             return [grid_search_t.best_score_,grid_search_t.best_params_]
         elif self.optimizer == 'RandomizedSearchCV':
-            random_search_t = RandomizedSearchCV(m, parameters, verbose=1)
             print("Performing RandomizedSearchCV...", n)
+            random_search_t = RandomizedSearchCV(m, parameters, verbose=1)
             random_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
             return [random_search_t.best_score_,random_search_t.best_params_]
         elif self.optimizer == 'GeneticSearchCV':
-            genetic_search_t = GeneticSearchCV(m, parameters, scoring=None, cv=KFold(n_splits=5), n_jobs=1, verbose=1, refit=False, population_size=50, gene_mutation_prob=0.10, gene_crossover_prob=0.5, tournament_size=3, generations_number=10)
             print("Performing GeneticSearchCV...", n)
+            genetic_search_t = GeneticSearchCV(m, parameters, scoring=None, cv=KFold(n_splits=5), n_jobs=1, verbose=1, refit=False, population_size=50, gene_mutation_prob=0.10, gene_crossover_prob=0.5, tournament_size=3, generations_number=10)
             genetic_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
             return [genetic_search_t.best_score_,genetic_search_t.best_params_]
         elif self.optimizer == 'EdasSearch':
-            eda_search_t = EdasSearch(getModelAccuracy, parameters, m,iterations=2, sample_size=15, select_ratio=0.3, debug=False)
-            eda_search_t.run()
             print("Performing EdasSearch...", n)
-            random_search_t = RandomizedSearchCV(m, parameters, verbose=1)
-            random_search_t.fit(self.evaluator.X_train, self.evaluator.y_train)
-            return [random_search_t.best_score_,random_search_t.best_params_]
+            eda_search_t = EdasSearch(getModelAccuracy, parameters, m,iterations=2, sample_size=15, select_ratio=0.3, debug=False, n_jobs=1)
+            eda_search_t.fit()
+            return [eda_search_t.best_score_,eda_search_t.best_params_]
 
     def improve_grid_search(self):
         self.evaluator.split_data()
@@ -603,12 +601,12 @@ class Improve():
             print("****************** num_cores: ",num_cores," *********************")
             pool = mp.Pool(processes=num_cores)
             r = pool.map(self.evaluate_model,self.pipelines)
-        else:
-            pool = MyPool(5)
+        elif self.optimizer == 'GeneticSearchCV' or self.optimizer == 'EdasSearch':
+            pool = MyPool(1)
             r = pool.map(self.evaluate_model,self.pipelines)
 
         pool.close()
-        #pool.join()
+        pool.join()
         i=0
 
         for cv_results in r:

@@ -35,7 +35,7 @@ class Prepare():
         scaler = RobustScaler()
         normalizer = Normalizer()
         transformers.append(('scaler', scaler))
-        transformers.append(('normalizer', normalizer))
+        #transformers.append(('normalizer', normalizer))
         return FeatureUnion(transformers)
 
     """

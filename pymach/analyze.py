@@ -31,10 +31,10 @@ class Analyze():
         """The init class."""
         self.problem_type = definer.problem_type
         self.response = definer.response
-        self.data = definer.data
+        self.data = definer.X
         self.describe = None
         self.plot_html = None
-        self.X = definer.X_1
+        self.X = definer.X
 
     def pipelineReal(self):
         self.description()
@@ -47,7 +47,7 @@ class Analyze():
         return self
 
     def transform(self):
-        head = self.X.columns.values
+        head = self.data.columns.values
         scaler = RobustScaler()
         self.data = pd.DataFrame(scaler.fit_transform(self.X))
         normalizer =  Normalizer()
