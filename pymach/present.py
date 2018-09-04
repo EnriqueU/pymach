@@ -19,6 +19,8 @@ from collections import OrderedDict
 
 import sys # print en consola
 
+from flask_login import LoginManager
+#from flask_googlelogin import GoogleLogin
 
 app = Flask(__name__)
 app.secret_key = 'some_secret'
@@ -28,6 +30,10 @@ app.config['UPLOAD_DIR'] = os.path.join(APP_PATH, 'uploads')
 app.config['MODELS_DIR'] = os.path.join(APP_PATH, 'models')
 app.config['MARKET_DIR'] = os.path.join(APP_PATH, 'market')
 ALLOWED_EXTENSIONS = ['txt', 'csv', 'ml', 'html']
+
+#login_manager = LoginManager()
+#login_manager.init_app(app)
+#googlelogin = GoogleLogin(app, login_manager)
 
 
 def report_analyze(figures, data_path, data_name,tipo='normal'):
@@ -136,6 +142,10 @@ def allowed_file(file_name):
 
 ########################### Start Upload Button ##################################
 @app.route('/')
+@app.route("/login")
+#def dashboard():
+#    return render_template("login.html")
+
 @app.route('/defineData', methods=['GET', 'POST'])
 def defineData():
     """  Show the files that have been uploaded """
