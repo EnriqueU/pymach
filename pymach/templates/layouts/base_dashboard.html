@@ -3,7 +3,7 @@
 {% block content %}
 
 {% with messages = get_flashed_messages(with_categories=true) %}
-	
+
 <nav id="sidebar" class="sidebar" role="navigation">
     <div class="js-sidebar-content">
         <header class="logo hidden-sm-down">
@@ -32,7 +32,7 @@
                     <!--[><li id="viewAction3"><a>Accion 3</a></li>  <]-->
                 <!--[></ul>                 <]-->
             <!--</li>-->
-            
+
             <li id="viewDefine"><a><span class="icon"><i class="glyphicon glyphicon-upload"></i></span>Upload</a></li>
             <li id="viewAnalyze"><a><span class="icon"><i class="fa fa-bar-chart-o"></i></span>Analyze</a></li>
             <li id="viewModels"><a><span class="icon"><i class="glyphicon glyphicon-th"></i></span>Model</a></li>
@@ -40,19 +40,22 @@
             <!-- <li id="viewPrediction"><a><span class="icon"><i class="glyphicon glyphicon-ok"></i></span>Prediction</a></li> -->
             <li id="viewMarket"><a><span class="icon"><i class="fa fa-cubes"></i></span>Market</a></li>
         </ul>
-        
+
     </div>
 </nav>
 <nav class="page-controls navbar navbar-dashboard">
     <div class="container-fluid">
         <div class="navbar-header">
-            <!--<ul class="nav navbar-nav">-->
-                <!--<li class="nav-item">-->
-                    <!--<a class="hidden-md-down nav-link" id="nav-state-toggle" href="#" data-html="true" data-placement="bottom">-->
-                        <!--<i class="fa fa-bars fa-lg"></i>-->
-                    <!--</a>-->
-                <!--</li>-->
-            <!--</ul>-->
+            <ul class="nav navbar-nav">
+                <li class="nav-item">
+                    <!--a class="nav-link" id="nav-state-toggle" href="#" data-html="true" data-placement="bottom">
+                        <i class="fa fa-bars fa-lg"></i>
+                    </a-->
+										<a class="hidden-md-down nav-link" id="nav-state-toggle" href="#" data-toggle="tooltip" data-html="true" data-original-title="Turn<br>on/off<br>sidebar<br>collapsing" data-placement="bottom">
+                        <i class="fa fa-bars fa-lg"></i>
+										</a>
+                </li>
+            </ul>
             <ul class="nav navbar-nav navbar-right hidden-md-up">
                 <li>
                     <a href="#" data-toggle="chat-sidebar">
@@ -60,7 +63,7 @@
                     </a>
                 </li>
             </ul>
-            <a class="navbar-brand hidden-md-up" href="/">
+            <a class="navbar-brand" href="/">
                 <i class="fa fa-circle text-gray mr-n-sm"></i>
                 <i class="fa fa-circle text-warning"></i>
                 &nbsp;
@@ -84,7 +87,7 @@
                             <div id="notifications-list" >
                                 <a class="list-group-item" href="#">
                                 </a>
-                            </div>                            
+                            </div>
                         </section>
                     </div>
                 </li>
@@ -96,10 +99,10 @@
                         <li><a class="dropdown-item" href="profile.html"><i class="glyphicon glyphicon-user"></i> &nbsp; Profile</a></li>
                         <li class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="#">Mesagges &nbsp;&nbsp;<span class="label label-pill label-danger animated bounceIn">9</span></a></li>
-                        <li class="dropdown-divider"></li>                         
+                        <li class="dropdown-divider"></li>
                     </ul>
                 </li>
-                
+
             </ul>
         </div>
     </div>

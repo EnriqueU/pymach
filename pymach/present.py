@@ -142,9 +142,9 @@ def allowed_file(file_name):
 
 ########################### Start Upload Button ##################################
 @app.route('/')
-@app.route("/login")
-#def dashboard():
-#    return render_template("login.html")
+@app.route("/home")
+def dashboard():
+    return render_template("home.html")
 
 @app.route('/defineData', methods=['GET', 'POST'])
 def defineData():

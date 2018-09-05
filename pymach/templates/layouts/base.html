@@ -15,7 +15,7 @@
     <script>
 
     </script>
-    
+
 </head>
 <body>
 
@@ -23,17 +23,15 @@
 
 {% block specific_code %}{% endblock %}
 
-<script src="{{url_for('static', filename = 'vendor/jquery/dist/jquery.min.js')}}"></script>
+<script src="{{url_for('static', filename = 'vendor/jquery/src/jquery.js')}}"></script>
 <script src="{{url_for('static', filename = 'vendor/jquery-pjax/jquery.pjax.js')}}"></script>
-<script src="{{url_for('static', filename = 'vendor/tether/dist/js/tether.js')}}"></script>
-<!--
+<script src="{{url_for('static', filename = 'vendor/tether/src/js/tether.js')}}"></script>
 <script src="{{url_for('static', filename = 'vendor/bootstrap/js/dist/util.js')}}"></script>
 <script src="{{url_for('static', filename = 'vendor/bootstrap/js/dist/collapse.js')}}"></script>
 <script src="{{url_for('static', filename = 'vendor/bootstrap/js/dist/dropdown.js')}}"></script>
 <script src="{{url_for('static', filename = 'vendor/bootstrap/js/dist/button.js')}}"></script>
 <script src="{{url_for('static', filename = 'vendor/bootstrap/js/dist/tooltip.js')}}"></script>
 <script src="{{url_for('static', filename = 'vendor/bootstrap/js/dist/alert.js')}}"></script>
--->
 <script src="{{url_for('static', filename = 'vendor/slimScroll/jquery.slimscroll.min.js')}}"></script>
 <script src="{{url_for('static', filename = 'vendor/widgster/widgster.js')}}"></script>
 <script src="{{url_for('static', filename = 'vendor/pace.js/pace.js')}}" data-pace-options='{ "target": ".content-wrap", "ghostTime": 1000 }'></script>
@@ -45,7 +43,7 @@
 
 <script  type="text/javascript" src="{{ url_for('static',filename='js/jquery-3.3.1.min.js') }}"></script>
 <script  type="text/javascript" src="{{ url_for('static',filename='js/bootstrap.min.js') }}"></script>
-	
+
 {% block specific_libraries %}{% endblock %}
 </body>
 </html>
