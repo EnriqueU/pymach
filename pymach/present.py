@@ -237,21 +237,71 @@ def login():
     session['oauth_state'] = state
     return render_template('login.html', auth_url=auth_url)
 
+@app.route('/oauth2callback')
+def callback():
+    if current_user is not None and current_user.is_authenticated:
+        return redirect(url_for('defineData'))
+    if 'error' in request.args:
+        if request.args.get('error') == 'access_denied':
+            return 'You denied access.'
+        return 'Error encountered.'
+    if 'code' not in request.args and 'state' not in request.args:
+        return redirect(url_for('login'))
+    else:
+        google = get_google_auth(state=session['oauth_state'])
+        try:
+            token = google.fetch_token(
+                Auth.TOKEN_URI,
+                client_secret=Auth.CLIENT_SECRET,
+                authorization_response=request.url)
+        except HTTPError:
+            return 'HTTPError occurred.'
+        google = get_google_auth(token=token)
+        resp = google.get(Auth.USER_INFO)
+        if resp.status_code == 200:
+            user_data = resp.json()
+            email = user_data['email']
+            user = User.query.filter_by(email=email).first()
+            if user is None:
+                user = User()
+                user.email = email
+            user.name = user_data['name']
+            path = os.path.join(app.config['UPLOAD_DIR'], user.name)
+            if not os.path.exists(path):
+                os.makedirs(path)
+            print(token)
+            user.tokens = json.dumps(token)
+            user.avatar = user_data['picture']
+            db.session.add(user)
+            db.session.commit()
+            login_user(user)
+            return redirect(url_for('defineData'))
+        return 'Could not fetch your information.'
+
+@app.route('/logout')
+@login_required
+def logout():
+	logout_user()
+	return redirect(url_for('index'))
+
 @app.route('/defineData', methods=['GET', 'POST'])
 @login_required
 def defineData():
     """  Show the files that have been uploaded """
-    dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
+    path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
+    dirs = os.listdir(path)
+    if dirs!="": # If user's directory is empty
+        dirs.sort(key=str.lower)
     return render_template('uploadData.html', files=dirs)
-
 
 @app.route('/storeData', methods=['GET', 'POST'])
 @login_required
 def storedata():
     """  Upload a new file """
-    dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
+    path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
+    dirs = os.listdir(path)
+    if dirs!="": # If user's directory is empty
+        dirs.sort(key=str.lower)
 
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -261,23 +311,24 @@ def storedata():
                 infoUpload='Chosse a file .csv',
                 files=dirs)
 
-        file = request.files['file']
-        file_name = ''
-        data_name = ''
-
+        file = request.files['file'] # get the file
         if file.filename == '':
-            flash('file not selected',"alert alert-danger")
+            flash('File not selected',"alert alert-danger")
             return render_template(
                 'uploadData.html',
                 infoUpload='file not selected',
                 files=dirs)
 
+        file_name = ''
+        data_name = ''
         if file and allowed_file(file.filename):
+            path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
             file_name = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_DIR'], file_name)
+            file_path = os.path.join(path, file_name)
             file.save(file_path)
-            dirs = os.listdir(app.config['UPLOAD_DIR'])
-            dirs.sort(key=str.lower)
+            dirs = os.listdir(path)
+            if dirs!="": # If user's directory is empty
+                dirs.sort(key=str.lower)
             flash('Uploaded!! '+file_name,"alert alert-success")
             return render_template(
                 'uploadData.html',
@@ -299,17 +350,19 @@ def chooseData():
     """  choose a file and show its content """
     from itertools import islice
     # tools.localization()
-
     file_name = ''
     data_name = ''
     data_path = ''
     dire = ''
-    dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
+    path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
+    dirs = os.listdir(path)
+    if dirs!="": # If user's directory is empty
+        dirs.sort(key=str.lower)
+
     if request.method == 'POST':
         file_name = request.form['submit']
         data_name = file_name.replace(".csv", "")
-        data_path = os.path.join(app.config['UPLOAD_DIR'], file_name)
+        data_path = os.path.join(path, file_name)
         dire = open(data_path)
         return render_template(
                 'uploadData.html',
@@ -328,8 +381,10 @@ def chooseData():
 @app.route('/analyze_base', methods=['GET', 'POST'])
 @login_required
 def analyze_base():
-    dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
+    path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
+    dirs = os.listdir(path)
+    if dirs!="": # If user's directory is empty
+        dirs.sort(key=str.lower)
     return render_template('analyzeData.html', files=dirs)
 
 
@@ -340,8 +395,10 @@ def analyze_app():
     data_name = ''
     data_path = ''
     archivo = ''
-    dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
+    path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
+    dirs = os.listdir(path)
+    if dirs!="": # If user's directory is empty
+        dirs.sort(key=str.lower)
     if request.method == 'POST':
         data_name = request.form['submit']
         data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
@@ -366,8 +423,10 @@ def analyze_app():
 @login_required
 @app.route('/model_base', methods=['GET', 'POST'])
 def model_base():
-    dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
+    path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
+    dirs = os.listdir(path)
+    if dirs!="": # If user's directory is empty
+        dirs.sort(key=str.lower)
     return render_template('models.html', files=dirs)
 
 @app.route('/model_app', methods=['GET', 'POST'])
@@ -376,8 +435,10 @@ def model_app():
     response = "class"
     data_name = ''
     data_path = ''
-    dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
+    path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
+    dirs = os.listdir(path)
+    if dirs!="": # If user's directory is empty
+        dirs.sort(key=str.lower)
     if request.method == 'POST':
         problem_type = request.form['typeModel']
         data_name = request.form['submit']
@@ -395,8 +456,10 @@ def model_app():
 @login_required
 @app.route('/improve_base', methods=['GET', 'POST'])
 def improve_base():
-    dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
+    path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
+    dirs = os.listdir(path)
+    if dirs!="": # If user's directory is empty
+        dirs.sort(key=str.lower)
     return render_template('improve.html', files=dirs)
 
 @app.route('/improve_app', methods=['GET', 'POST'])
@@ -404,8 +467,10 @@ def improve_base():
 def improve_app():
     data_name = ''
     data_path = ''
-    dirs = os.listdir(app.config['UPLOAD_DIR'])
-    dirs.sort(key=str.lower)
+    path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
+    dirs = os.listdir(path)
+    if dirs!="": # If user's directory is empty
+        dirs.sort(key=str.lower)
     if request.method == 'POST':
         optimizer = request.form['search']
         problem_type = request.form['typeModelRC']
@@ -426,8 +491,10 @@ def improve_app():
 @app.route('/market_base', methods=['GET', 'POST'])
 @login_required
 def market_base():
-    dirs = os.listdir(app.config['MARKET_DIR'])
-    dirs.sort(key=str.lower)
+    path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
+    dirs = os.listdir(path)
+    if dirs!="": # If user's directory is empty
+        dirs.sort(key=str.lower)
     return render_template('market.html', files=dirs)
 
 
@@ -437,8 +504,10 @@ def market_app():
     response = "class"
     data_name = ''
     data_path = ''
-    dirs = os.listdir(app.config['MARKET_DIR'])
-    dirs.sort(key=str.lower)
+    path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
+    dirs = os.listdir(path)
+    if dirs!="": # If user's directory is empty
+        dirs.sort(key=str.lower)
     if request.method == 'POST':
         data_name = request.form['submit']
         # data_path = os.path.join(app.config['MARKET_DIR'], data_name)
@@ -469,55 +538,8 @@ def market_app():
 
 ################################################################################
 
-
-@app.route('/oauth2callback')
-def callback():
-    if current_user is not None and current_user.is_authenticated:
-        return redirect(url_for('defineData'))
-    if 'error' in request.args:
-        if request.args.get('error') == 'access_denied':
-            return 'You denied access.'
-        return 'Error encountered.'
-    if 'code' not in request.args and 'state' not in request.args:
-        print("hola")
-        return redirect(url_for('login'))
-    else:
-        google = get_google_auth(state=session['oauth_state'])
-        try:
-            token = google.fetch_token(
-                Auth.TOKEN_URI,
-                client_secret=Auth.CLIENT_SECRET,
-                authorization_response=request.url)
-        except HTTPError:
-            return 'HTTPError occurred.'
-        google = get_google_auth(token=token)
-        resp = google.get(Auth.USER_INFO)
-        if resp.status_code == 200:
-            user_data = resp.json()
-            email = user_data['email']
-            user = User.query.filter_by(email=email).first()
-            if user is None:
-                user = User()
-                user.email = email
-            user.name = user_data['name']
-            print(token)
-            user.tokens = json.dumps(token)
-            user.avatar = user_data['picture']
-            db.session.add(user)
-            db.session.commit()
-            login_user(user)
-            #return redirect(url_for('index'))
-            return redirect(url_for('defineData'))
-        return 'Could not fetch your information.'
-
-
-@app.route('/logout')
-@login_required
-def logout():
-	logout_user()
-	return redirect(url_for('index'))
-
 if __name__ == '__main__':
+    db.create_all()
     app.run(host='0.0.0.0', debug=True, port=8002)
     #falta: para mensaje flush
         #app.secret_key = 'some_secret'
