@@ -1,6 +1,9 @@
 # Standard Libraries
-import os
 import subprocess
+import datetime
+import sys # print en consola
+import os
+import json
 # Local Libraries
 import define
 import analyze
@@ -12,17 +15,60 @@ import tools
 
 import pandas as pd
 
-from flask import Flask, render_template, \
-        redirect, request, url_for, jsonify, flash
+from flask_login import LoginManager, login_required, login_user, logout_user, current_user, UserMixin
+from flask import Flask, render_template, redirect, request, url_for, jsonify, flash, session
+from requests_oauthlib import OAuth2Session
+from requests.exceptions import HTTPError
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 from werkzeug.utils import secure_filename
 from collections import OrderedDict
 
-import sys # print en consola
+basedir = os.path.abspath(os.path.dirname(__file__))
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-from flask_login import LoginManager
-#from flask_googlelogin import GoogleLogin
+"""App Configuration"""
+class Auth:
+    """Google Project Credentials"""
+    CLIENT_ID = ('814931001809-tch3d62bdn7f0j3qkdu7dmp21n7t87ra'
+                    '.apps.googleusercontent.com')
+    CLIENT_SECRET = 'M9s6kUQ3MYllNAl4t2NAv_9V'
+    REDIRECT_URI = 'http://127.0.0.1:8002/oauth2callback'
+    AUTH_URI = 'https://accounts.google.com/o/oauth2/auth'
+    TOKEN_URI = 'https://accounts.google.com/o/oauth2/token'
+    USER_INFO = 'https://www.googleapis.com/userinfo/v2/me'
+    SCOPE = ['https://www.googleapis.com/auth/userinfo.email',
+             'https://www.googleapis.com/auth/userinfo.profile']
+
+
+class Config:
+    """Base config"""
+    APP_NAME = "Pymach"
+    SECRET_KEY = os.environ.get("SECRET_KEY") or "somethingsecret"
+
+
+class DevConfig(Config):
+    """Dev config"""
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, "test.db")
+
+
+class ProdConfig(Config):
+    """Production config"""
+    DEBUG = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, "prod.db")
+
+
+config = {
+    "dev": DevConfig,
+    "prod": ProdConfig,
+    "default": DevConfig
+}
 
 app = Flask(__name__)
+app.config.from_object(config['dev'])
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 app.secret_key = 'some_secret'
 
 APP_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -31,10 +77,44 @@ app.config['MODELS_DIR'] = os.path.join(APP_PATH, 'models')
 app.config['MARKET_DIR'] = os.path.join(APP_PATH, 'market')
 ALLOWED_EXTENSIONS = ['txt', 'csv', 'ml', 'html']
 
-login_manager = LoginManager()
-login_manager.init_app(app)
-#googlelogin = GoogleLogin(app, login_manager)
+db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+login_manager.login_view = "login"
+login_manager.session_protection = "strong"
 
+""" DB Models """
+class User(db.Model, UserMixin):
+    __tablename__ = "users"
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=True)
+    avatar = db.Column(db.String(200))
+    tokens = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow())
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+
+""" OAuth Session creation """
+def get_google_auth(state=None, token=None):
+    # if token from server is available, just use it
+    # we can now fetch user info from google
+    if token:
+        return OAuth2Session(Auth.CLIENT_ID, token=token)
+    if state:
+        return OAuth2Session(
+            Auth.CLIENT_ID,
+            state=state,
+            redirect_uri=Auth.REDIRECT_URI)
+    # neither token nor state is set
+    # start a new oauth session
+    oauth = OAuth2Session(
+        Auth.CLIENT_ID,
+        redirect_uri=Auth.REDIRECT_URI,
+        scope=Auth.SCOPE)
+    return oauth
 
 def report_analyze(figures, data_path, data_name,tipo='normal'):
     # tipo indica normalizar o no los datos
@@ -142,31 +222,20 @@ def allowed_file(file_name):
 
 ########################### Start Upload Button ##################################
 @app.route('/')
-@app.route("/home")
-def dashboard():
-    return render_template("home.html")
+#@login_required
+def index():
+    return render_template('home.html')
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login')
 def login():
-    # Here we use a class of some kind to represent and validate our
-    # client-side form data. For example, WTForms is a library that will
-    # handle this for us, and we use a custom LoginForm to validate.
-    form = LoginForm()
-    if form.validate_on_submit():
-        # Login and validate the user.
-        # user should be an instance of your `User` class
-        login_user(user)
-
-        flask.flash('Logged in successfully.')
-
-        next = flask.request.args.get('next')
-        # is_safe_url should check if the url is safe for redirects.
-        # See http://flask.pocoo.org/snippets/62/ for an example.
-        if not is_safe_url(next):
-            return flask.abort(400)
-
-        return flask.redirect(next or flask.url_for('index'))
-    return flask.render_template('login.html', form=form)
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    google = get_google_auth()
+    auth_url, state = google.authorization_url(
+            Auth.AUTH_URI,
+            access_type='offline')
+    session['oauth_state'] = state
+    return render_template('login.html', auth_url=auth_url)
 
 @app.route('/defineData', methods=['GET', 'POST'])
 @login_required
@@ -178,6 +247,7 @@ def defineData():
 
 
 @app.route('/storeData', methods=['GET', 'POST'])
+@login_required
 def storedata():
     """  Upload a new file """
     dirs = os.listdir(app.config['UPLOAD_DIR'])
@@ -224,6 +294,7 @@ def storedata():
 
 
 @app.route('/chooseData', methods=['GET', 'POST'])
+@login_required
 def chooseData():
     """  choose a file and show its content """
     from itertools import islice
@@ -255,6 +326,7 @@ def chooseData():
 
 # ########################## Start Analyze Button ##################################
 @app.route('/analyze_base', methods=['GET', 'POST'])
+@login_required
 def analyze_base():
     dirs = os.listdir(app.config['UPLOAD_DIR'])
     dirs.sort(key=str.lower)
@@ -262,6 +334,7 @@ def analyze_base():
 
 
 @app.route('/analyze_app', methods=['GET', 'POST'])
+@login_required
 def analyze_app():
     figures = ['Histogram', 'Boxplot', 'Correlation']
     data_name = ''
@@ -290,6 +363,7 @@ def analyze_app():
 ########################### End Analyze Button ##################################
 
 ########################### Start Model Button ##################################
+@login_required
 @app.route('/model_base', methods=['GET', 'POST'])
 def model_base():
     dirs = os.listdir(app.config['UPLOAD_DIR'])
@@ -297,6 +371,7 @@ def model_base():
     return render_template('models.html', files=dirs)
 
 @app.route('/model_app', methods=['GET', 'POST'])
+@login_required
 def model_app():
     response = "class"
     data_name = ''
@@ -317,6 +392,7 @@ def model_app():
 ########################### End Model Button ##################################
 
 ########################### Start Improve Button ##################################
+@login_required
 @app.route('/improve_base', methods=['GET', 'POST'])
 def improve_base():
     dirs = os.listdir(app.config['UPLOAD_DIR'])
@@ -324,6 +400,7 @@ def improve_base():
     return render_template('improve.html', files=dirs)
 
 @app.route('/improve_app', methods=['GET', 'POST'])
+@login_required
 def improve_app():
     data_name = ''
     data_path = ''
@@ -347,6 +424,7 @@ def improve_app():
 
 ########################### Start Model Button ##################################
 @app.route('/market_base', methods=['GET', 'POST'])
+@login_required
 def market_base():
     dirs = os.listdir(app.config['MARKET_DIR'])
     dirs.sort(key=str.lower)
@@ -354,6 +432,7 @@ def market_base():
 
 
 @app.route('/market_app', methods=['GET', 'POST'])
+@login_required
 def market_app():
     response = "class"
     data_name = ''
@@ -387,6 +466,56 @@ def market_app():
     # print(attributes, ' this is something')
     # return render_template('showPrediction.html', file = f, attributes = attributes, data_class = data_class, model = model)
 
+
+################################################################################
+
+
+@app.route('/oauth2callback')
+def callback():
+    if current_user is not None and current_user.is_authenticated:
+        return redirect(url_for('defineData'))
+    if 'error' in request.args:
+        if request.args.get('error') == 'access_denied':
+            return 'You denied access.'
+        return 'Error encountered.'
+    if 'code' not in request.args and 'state' not in request.args:
+        print("hola")
+        return redirect(url_for('login'))
+    else:
+        google = get_google_auth(state=session['oauth_state'])
+        try:
+            token = google.fetch_token(
+                Auth.TOKEN_URI,
+                client_secret=Auth.CLIENT_SECRET,
+                authorization_response=request.url)
+        except HTTPError:
+            return 'HTTPError occurred.'
+        google = get_google_auth(token=token)
+        resp = google.get(Auth.USER_INFO)
+        if resp.status_code == 200:
+            user_data = resp.json()
+            email = user_data['email']
+            user = User.query.filter_by(email=email).first()
+            if user is None:
+                user = User()
+                user.email = email
+            user.name = user_data['name']
+            print(token)
+            user.tokens = json.dumps(token)
+            user.avatar = user_data['picture']
+            db.session.add(user)
+            db.session.commit()
+            login_user(user)
+            #return redirect(url_for('index'))
+            return redirect(url_for('defineData'))
+        return 'Could not fetch your information.'
+
+
+@app.route('/logout')
+@login_required
+def logout():
+	logout_user()
+	return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=8002)
