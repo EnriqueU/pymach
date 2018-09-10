@@ -162,7 +162,6 @@ def report_model(response, data_path, data_name, problem_type):
     dict_report = {'plot': plot, 'table': table}
     return dict_report
 
-
 def report_improve(data_path, data_name, problem_type, optimizer, modelos):
     definer = define.Define(data_path=data_path,data_name=data_name,problem_type=problem_type).pipeline()
     preparer = prepare.Prepare(definer).pipeline()
@@ -218,7 +217,6 @@ def report_market(data_name):
 
 def allowed_file(file_name):
     return '.' in file_name and file_name.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
-
 
 ########################### Start Upload Button ##################################
 @app.route('/')
@@ -322,7 +320,6 @@ def storedata():
         file_name = ''
         data_name = ''
         if file and allowed_file(file.filename):
-            path = os.path.join(app.config['UPLOAD_DIR'],current_user.name)
             file_name = secure_filename(file.filename)
             file_path = os.path.join(path, file_name)
             file.save(file_path)
@@ -342,7 +339,6 @@ def storedata():
             files=dirs)
     else:
         return redirect(url_for('defineData'))
-
 
 @app.route('/chooseData', methods=['GET', 'POST'])
 @login_required
@@ -387,7 +383,6 @@ def analyze_base():
         dirs.sort(key=str.lower)
     return render_template('analyzeData.html', files=dirs)
 
-
 @app.route('/analyze_app', methods=['GET', 'POST'])
 @login_required
 def analyze_app():
@@ -401,7 +396,7 @@ def analyze_app():
         dirs.sort(key=str.lower)
     if request.method == 'POST':
         data_name = request.form['submit']
-        data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
+        data_path = os.path.join(path, data_name)
         tipo = request.args.get('tipo', default = 'real', type = str)
         #if tipo=='normal':
         figures1=report_analyze(figures, data_path, data_name)
@@ -442,7 +437,7 @@ def model_app():
     if request.method == 'POST':
         problem_type = request.form['typeModel']
         data_name = request.form['submit']
-        data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
+        data_path = os.path.join(path, data_name)
 
     return render_template(
             'models.html',
@@ -477,7 +472,7 @@ def improve_app():
         modelos = request.form.getlist('typeModel')
         # ---------------------------------------------------------------------
         data_name = request.form['submit'] # choosed data
-        data_path = os.path.join(app.config['UPLOAD_DIR'], data_name)
+        data_path = os.path.join(path, data_name)
 
     return render_template(
             'improve.html',
@@ -496,7 +491,6 @@ def market_base():
     if dirs!="": # If user's directory is empty
         dirs.sort(key=str.lower)
     return render_template('market.html', files=dirs)
-
 
 @app.route('/market_app', methods=['GET', 'POST'])
 @login_required
