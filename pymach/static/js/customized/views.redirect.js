@@ -1,5 +1,5 @@
 $(function(){
-    
+
     $("#viewDefine").on("click", function(){
         window.location.replace("/defineData");
     });
@@ -12,11 +12,11 @@ $(function(){
     $("#viewImprove").on("click", function(){
         window.location.replace("/improve_base");
     });
-    // $("#viewPrediction").on("click", function(){
-        // window.location.replace("/prediction");
-    // });
+    $("#viewPrediction").on("click", function(){
+        window.location.replace("/prediction");
+    });
     $("#viewMarket").on("click", function(){
         window.location.replace("/market_base");
     })
-    
+
 });

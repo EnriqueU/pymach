@@ -263,6 +263,7 @@ class GeneticSearchCV:
 		#pop, logbook = algorithms.eaGenerateUpdate(toolbox,
 		#								ngen=self.generations_number, stats=stats,
 		#								halloffame=hof, verbose=self.verbose)
+		print(logbook)
 		# Save History
 		self.all_history_ = hist
 		self.all_logbooks_ = logbook

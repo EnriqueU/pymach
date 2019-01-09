@@ -22,8 +22,7 @@ from collections import namedtuple
 from sklearn.preprocessing import MinMaxScaler, Normalizer,\
 StandardScaler, RobustScaler, LabelEncoder, FunctionTransformer
 
-__all__ = [
-    'read', 'description', 'classBalance', 'hist', 'density']
+__all__ = ['read', 'description', 'classBalance', 'hist', 'density']
 
 class Analyze():
     """ A class for data analysis """

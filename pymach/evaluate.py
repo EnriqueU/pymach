@@ -216,6 +216,7 @@ class Evaluate():
         print("****************** num_cores: ",num_cores," *********************")
         pool = mp.Pool(processes=num_cores)
         r = pool.map(self.evaluate_model,m)
+        pool.join()
         pool.close()
         i=0
         for cv_results in r:
